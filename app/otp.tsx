@@ -59,9 +59,11 @@ export default function Otp() {
 
     const handleVerify = async () => {
         const enteredOtp = otp.join("");
+
         try {
+            console.log("Enter in verify")
             await verifyOtp(enteredOtp); // ✅ checks against sentOtp in context
-            router.replace("/(tabs)");
+            router.push("/(tabs)/cart");
         } catch (err) {
             setError("Invalid OTP");
             setOtp(["", "", "", "", "", ""]);
