@@ -8,7 +8,7 @@ export default function Home() {
         <View style={styles.container}>
             <Text style={Typography.heading}>Nearby Restaurants</Text>
 
-            <FlatList
+            {/* <FlatList
                 data={[{ id: "1", name: "Sharma Ji Dhaba", address: "Sector 18" }]}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={{ marginTop: Spacing.md }}
@@ -19,7 +19,7 @@ export default function Home() {
                         onCall={() => router.push("/order-waiting")}
                     />
                 )}
-            />
+            /> */}
         </View>
     );
 }

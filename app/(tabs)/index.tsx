@@ -91,7 +91,7 @@ export default function Home() {
                         <RestaurantCard
                             key={restaurant.id}
                             {...restaurant}
-                            onPress={() => console.log("Opening:", restaurant.name)}
+                            onPress={() => router.push("/(user)/resturantDetails")}
                             onCall={() => console.log("Calling:", restaurant.name)}
                         />
                     ))}
