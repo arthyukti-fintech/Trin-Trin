@@ -23,3 +23,58 @@ export type Order = {
     pickupOtp?: string;
     deliveryOtp?: string;
 };
+
+
+
+
+
+
+export type RootStackParamList = {
+  Login: undefined;
+  Main: undefined;
+  Checkout: undefined;
+  OrderStatus: { orderId?: string };
+};
+
+export type TabParamList = {
+  Home: undefined;
+  Menu: undefined;
+  Cart: undefined;
+  Orders: undefined;
+  Profile: undefined;
+};
+
+
+
+
+export interface User {
+  id: string;
+  phone: string;
+  name?: string;
+  email?: string;
+  address?: string;
+}
+
+export interface FoodItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+  preparationTime: number;
+  ingredients: string[];
+}
+
+export interface CartItem {
+  foodItem: FoodItem;
+  quantity: number;
+  specialInstructions?: string;
+}
+
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
