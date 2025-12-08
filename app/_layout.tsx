@@ -1,31 +1,35 @@
 import { Drawer } from "expo-router/drawer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Dimensions } from "react-native";
+import { Colors } from "./theme";
 
 export default function RootLayout() {
   const screenWidth = Dimensions.get("window").width;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }} edges={["bottom", "left", "right"]}>
       <Drawer
         screenOptions={{
           headerShown: false,
-          drawerActiveTintColor: '#0b381d',
-          drawerInactiveTintColor: '#202020',
-          drawerActiveBackgroundColor: '#e6ecf1',
+
+          drawerActiveTintColor: Colors.primary,
+          drawerInactiveTintColor: Colors.secondary,
+          drawerActiveBackgroundColor: Colors.primarySoft,
+
           drawerStyle: {
-            backgroundColor: '#ffffff',
+            backgroundColor: Colors.card,
             width: screenWidth * 0.75,
           },
+
           drawerLabelStyle: {
             fontSize: 17,
-            fontWeight: '600',
+            fontWeight: "600",
           },
-          drawerType: 'front',
+
+          drawerType: "front",
         }}
       >
-
-        {/* 🔹 Your HOME ENTRY (app/index.jsx) */}
+        {/* ✅ HOME (app/index.tsx) */}
         <Drawer.Screen
           name="index"
           options={{
@@ -33,7 +37,7 @@ export default function RootLayout() {
           }}
         />
 
-        {/* 🔹 Add your other Drawer screens */}
+        {/* ✅ SETTINGS (optional later) */}
         <Drawer.Screen
           name="settings"
           options={{
@@ -41,14 +45,13 @@ export default function RootLayout() {
           }}
         />
 
-        {/* 🔹 Hidden screens (not shown inside Drawer list) */}
+        {/* ✅ HIDDEN ROUTES */}
         <Drawer.Screen
           name="modal"
           options={{
             drawerItemStyle: { display: "none" },
           }}
         />
-
       </Drawer>
     </SafeAreaView>
   );
