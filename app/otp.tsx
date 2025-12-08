@@ -69,7 +69,7 @@ export default function Otp() {
             setOtp(["", "", "", "", "", ""]);
             inputRefs.current[0]?.focus();
         }
-    };0
+    }; 0
     const handleResendOTP = () => {
         if (timer > 0) return;
 
