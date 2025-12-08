@@ -63,13 +63,13 @@ export default function Otp() {
         try {
             console.log("Enter in verify")
             await verifyOtp(enteredOtp); // ✅ checks against sentOtp in context
-            router.push("/(tabs)/cart");
+            router.push("/(tabs)");
         } catch (err) {
             setError("Invalid OTP");
             setOtp(["", "", "", "", "", ""]);
             inputRefs.current[0]?.focus();
         }
-    };
+    };0
     const handleResendOTP = () => {
         if (timer > 0) return;
 
