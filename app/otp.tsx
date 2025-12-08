@@ -80,6 +80,7 @@ export default function Otp() {
                     }
                 ]
             );
+            setOtp(["", "", "", "", "", ""]);
         } else {
             setError("Invalid OTP. Please try again.");
             setOtp(["", "", "", "", "", ""]);

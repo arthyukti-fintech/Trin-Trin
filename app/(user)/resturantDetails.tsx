@@ -10,6 +10,8 @@ import {
     StatusBar
 } from "react-native";
 import BackHeader from "../components/BackHeader";
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 // Theme
 const Colors = {
@@ -211,7 +213,6 @@ const menuData = [
     },
 ];
 
-
 export default function RestaurantApp() {
     const [currentScreen, setCurrentScreen] = useState("details");
     const [cart, setCart] = useState([]);
@@ -302,6 +303,9 @@ function RestaurantDetails({
     setFavorite
 }) {
     const [selectedCategory, setSelectedCategory] = useState(menu[0].category);
+    const handleGoBack = () => {
+        router.push("/")
+    }
 
     return (
         <View style={styles.screenContainer}>
@@ -313,9 +317,14 @@ function RestaurantDetails({
                         style={styles.restaurantImage}
                     />
                     <View style={styles.headerOverlay}>
-                        <Pressable style={styles.headerButton}>
-                            <Icon name="arrow-back" size={24} color="#fff" />
+                        <Pressable
+                            style={styles.headerButton}
+                            onPress={handleGoBack}
+                        >
+                            <Ionicons name="arrow-back" size={24} color="#fff" />
                         </Pressable>
+
+                        {/* <BackHeader containerStyle={{ padding: 0 }} backTo={"/"} /> */}
 
                         <View style={styles.headerActions}>
                             <Pressable

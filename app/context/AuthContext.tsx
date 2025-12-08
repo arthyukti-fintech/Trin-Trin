@@ -20,7 +20,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (phone: string): Promise<void> => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+
     // Mock API call
     setTimeout(() => {
       // In real app, send OTP to phone
@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const verifyOtp = async (otp: string): Promise<void> => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+
     // Mock verification
     setTimeout(() => {
       if (otp === '123456') { // Mock OTP
@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           email: 'john@example.com',
           address: '123 Main St'
         };
-        
+
         setAuthState({
           user: mockUser,
           isAuthenticated: true,
