@@ -3,49 +3,26 @@ import { View, Text, TextInput, StyleSheet, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { Colors, Spacing, Typography } from "./theme";
 import Button from "./components/Button";
-
+import { useAuth } from "./context/AuthContext";
 export default function Login() {
     const router = useRouter();
     const [phoneNumber, setPhoneNumber] = useState("");
     const [error, setError] = useState("");
+    const { login } = useAuth();
 
-    const handleSendOTP = () => {
-        // Validate phone number
+    const handleSendOTP = async () => {
         if (phoneNumber.length !== 10) {
             setError("Please enter a valid 10-digit mobile number");
             return;
         }
-
-        if (!/^\d+$/.test(phoneNumber)) {
-            setError("Mobile number should contain only digits");
-            return;
+        try {
+            await login(phoneNumber); // ✅ generates OTP and saves in context
+            router.push("/otp"); // navigate to OTP screen
+        } catch (err) {
+            console.log(err);
         }
-
-        // Generate mock OTP (6 digits)
-        const mockOTP = Math.floor(100000 + Math.random() * 900000).toString();
-
-        // In real app, this would be sent via SMS
-        // For demo, we'll show it in an alert
-        Alert.alert(
-            "OTP Sent! 📱",
-            `Your verification code is: ${mockOTP}\n\n(This is a mock OTP for demo purposes)`,
-            [
-                {
-                    text: "OK",
-                    onPress: () => {
-                        // Navigate to OTP screen with phone number and OTP
-                        router.push({
-                            pathname: "/otp",
-                            params: {
-                                phoneNumber: phoneNumber,
-                                mockOTP: mockOTP
-                            }
-                        });
-                    }
-                }
-            ]
-        );
     };
+
 
     const handlePhoneChange = (text: string) => {
         // Only allow digits and limit to 10

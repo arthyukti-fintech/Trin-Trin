@@ -18,42 +18,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isLoading: false
   });
 
+  const [sentOtp, setSentOtp] = useState<string>("");
+
   const login = async (phone: string): Promise<void> => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
-    // Mock API call
-    setTimeout(() => {
-      // In real app, send OTP to phone
-      console.log('OTP sent to:', phone);
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-    }, 1000);
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log("OTP sent to:", phone, "OTP:", generatedOtp);
+        setSentOtp(generatedOtp); // save OTP for verification
+        setAuthState(prev => ({ ...prev, isLoading: false }));
+        resolve();
+      }, 1000);
+    });
   };
 
   const verifyOtp = async (otp: string): Promise<void> => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
-    // Mock verification
-    setTimeout(() => {
-      if (otp === '123456') { // Mock OTP
-        const mockUser: User = {
-          id: '1',
-          phone: '+1234567890',
-          name: 'John Doe',
-          email: 'john@example.com',
-          address: '123 Main St'
-        };
-        
-        setAuthState({
-          user: mockUser,
-          isAuthenticated: true,
-          isLoading: false
-        });
-      } else {
-        setAuthState(prev => ({ ...prev, isLoading: false }));
-        throw new Error('Invalid OTP');
-      }
-    }, 1000);
+
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (otp === sentOtp) { // check against the generated OTP
+          const mockUser: User = {
+            id: '1',
+            phone: '+1234567890',
+            name: 'John Doe',
+            email: 'john@example.com',
+            address: '123 Main St'
+          };
+          setAuthState({
+            user: mockUser,
+            isAuthenticated: true,
+            isLoading: false
+          });
+          resolve();
+        } else {
+          setAuthState(prev => ({ ...prev, isLoading: false }));
+          reject(new Error("Invalid OTP"));
+        }
+      }, 1000);
+    });
   };
+
 
   const logout = () => {
     setAuthState({
