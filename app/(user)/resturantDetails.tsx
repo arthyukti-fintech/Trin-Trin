@@ -199,7 +199,7 @@ const menuData = [
             },
             {
                 id: "d2",
-                name: "Chocolate Brownie",
+                name: "Chocolate Browniee",
                 description: "Warm brownie with vanilla ice cream",
                 price: 180,
                 isVeg: true,
