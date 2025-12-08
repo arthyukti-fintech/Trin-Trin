@@ -31,7 +31,7 @@ export default function RootLayout() {
       >
         {/* ✅ HOME (app/index.tsx) */}
         <Drawer.Screen
-          name="index"
+          name="login"
           options={{
             title: "Home",
           }}
@@ -48,6 +48,13 @@ export default function RootLayout() {
         {/* ✅ HIDDEN ROUTES */}
         <Drawer.Screen
           name="modal"
+          options={{
+            drawerItemStyle: { display: "none" },
+          }}
+        />
+
+        <Drawer.Screen
+          name="Home"
           options={{
             drawerItemStyle: { display: "none" },
           }}
