@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import {Colors} from '../theme/colors'
 import BackHeader from "../components/BackHeader";
+import { router } from "expo-router";
 
 import { menuData } from '../data/menuData'
 
@@ -160,6 +161,9 @@ function RestaurantDetails({
     setFavorite
 }) {
     const [selectedCategory, setSelectedCategory] = useState(menu[0].category);
+    const handleGoback = () => {
+        router.push("/(tabs)")
+    }
 
     return (
         <View style={styles.screenContainer}>
@@ -171,7 +175,7 @@ function RestaurantDetails({
                         style={styles.restaurantImage}
                     />
                     <View style={styles.headerOverlay}>
-                        <Pressable style={styles.headerButton}>
+                        <Pressable style={styles.headerButton} onPress={handleGoback}>
                             <Icon name="arrow-back" size={24} color="#fff" />
                         </Pressable>
 

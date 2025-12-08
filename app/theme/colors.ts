@@ -1,17 +1,26 @@
 export const Colors = {
-  primary: "#16A34A",        // green (trust + payments)
-  primarySoft: "#DCFCE7",
+  /** 🔴 PRIMARY BRAND (Red from logo) */
+  primary: "#C62828",        // Deep Karnataka Red
+  primarySoft: "#FDECEA",    // Soft red background
 
-  secondary: "#0F172A",      // dark text
-  muted: "#64748B",          // subtitles
+  /** 🟡 SECONDARY BRAND (Yellow from logo) */
+  accent: "#F4B400",         // Mustard Yellow
+  accentSoft: "#FFF4CC",     // Soft yellow background
 
-  background: "#F8FAFC",     // app background
+  /** ⚫ TEXT */
+  secondary: "#1F2933",      // Dark readable text
+  muted: "#6B7280",          // Subtitles / hints
+
+  /** ⚪ BACKGROUNDS */
+  background: "#FFF9F0",     // Warm cream (matches logo bg)
   card: "#FFFFFF",
 
-  success: "#22C55E",
-  warning: "#FACC15",
-  error: "#EF4444",
+  /** ✅ STATUS */
+  success: "#2E7D32",        // Green (veg / order success)
+  warning: "#F4B400",        // Yellow warning
+  error: "#C62828",          // Same brand red
 
+  /** 🔲 UI */
   border: "#E5E7EB",
   shadow: "#000000",
 };

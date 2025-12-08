@@ -7,7 +7,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false }} />
       </AuthProvider>
     </GestureHandlerRootView>
   );
