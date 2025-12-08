@@ -211,7 +211,7 @@ const menuData = [
     },
 ];
 
-// Main App Component
+
 export default function RestaurantApp() {
     const [currentScreen, setCurrentScreen] = useState("details");
     const [cart, setCart] = useState([]);
