@@ -2,7 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../components/HomeHeader' ; // <-- your only screen
 import { useAuth } from '../context/AuthContext';
-import LoginScreen from '../(auth)/login'
+import LoginScreen from '../login'
 type RootStackParamList = {
   Home: undefined;
   Login: undefined;

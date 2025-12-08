@@ -63,12 +63,12 @@ export default function CompactFoodHeader() {
         r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleAddressSelect = (address:any) => {
+    const handleAddressSelect = (address: any) => {
         setSelectedAddress(address);
         setShowLocationDropdown(false);
     };
 
-    const handleSearch = (text:any) => {
+    const handleSearch = (text: any) => {
         setSearchQuery(text);
         setShowSearchResults(text.length > 0);
     };
