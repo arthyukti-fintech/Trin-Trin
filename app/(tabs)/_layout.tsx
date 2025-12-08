@@ -3,8 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 
 export default function TabLayout() {
-   const { authState } = useAuth();
-const isLoggedIn = authState.isAuthenticated;
+  const { authState } = useAuth();
+  const isLoggedIn = authState.isAuthenticated;
 
 
   if (!isLoggedIn) {
