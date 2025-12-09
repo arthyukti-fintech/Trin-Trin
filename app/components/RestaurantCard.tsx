@@ -1,7 +1,11 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Pressable, Image } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, StyleSheet, Pressable, Image, ScrollView, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors, Spacing, Typography } from "../theme";
+import { router } from "expo-router";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const IMAGE_WIDTH = SCREEN_WIDTH - 32; // Accounting for card padding
 
 type Props = {
     id: string;
@@ -15,7 +19,8 @@ type Props = {
     priceForTwo: number;
     discount?: string;
     isVeg: boolean;
-    image: string; // URL or require() path
+    image?: string; // Support old single image prop
+    images?: string[]; // Support new multiple images prop
     isFavorite?: boolean;
     onPress?: () => void;
     onCall?: () => void;
@@ -34,11 +39,35 @@ export default function RestaurantCard({
     discount,
     isVeg,
     image,
+    images,
     isFavorite = false,
     onPress,
     onCall,
 }: Props) {
     const [favorite, setFavorite] = useState(isFavorite);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const scrollViewRef = useRef<ScrollView>(null);
+
+    // Convert single image to array if images prop not provided
+    const imageArray = images || (image ? [image] : []);
+
+    // Auto-slide effect
+    useEffect(() => {
+        if (imageArray.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setCurrentIndex((prevIndex) => {
+                const nextIndex = (prevIndex + 1) % imageArray.length;
+                scrollViewRef.current?.scrollTo({
+                    x: nextIndex * IMAGE_WIDTH,
+                    animated: true,
+                });
+                return nextIndex;
+            });
+        }, 3000); // Slides every 3 seconds
+
+        return () => clearInterval(interval);
+    }, [imageArray.length]);
 
     const toggleFavorite = () => {
         setFavorite(!favorite);
@@ -51,6 +80,16 @@ export default function RestaurantCard({
         return "#EF4444";
     };
 
+    const menuCard = () => {
+        router.push("/MenuCard/menuCard");
+    };
+
+    const handleScroll = (event: any) => {
+        const contentOffsetX = event.nativeEvent.contentOffset.x;
+        const index = Math.round(contentOffsetX / IMAGE_WIDTH);
+        setCurrentIndex(index);
+    };
+
     return (
         <Pressable
             onPress={onPress}
@@ -59,13 +98,40 @@ export default function RestaurantCard({
                 { opacity: pressed ? 0.95 : 1 },
             ]}
         >
-            {/* Image Section */}
+            {/* Image Slider Section */}
             <View style={styles.imageContainer}>
-                <Image
-                    source={typeof image === 'string' ? { uri: image } : image}
-                    style={styles.image}
-                    resizeMode="cover"
-                />
+                <ScrollView
+                    ref={scrollViewRef}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onMomentumScrollEnd={handleScroll}
+                    scrollEventThrottle={16}
+                >
+                    {imageArray.map((img, index) => (
+                        <Image
+                            key={index}
+                            source={typeof img === 'string' ? { uri: img } : img}
+                            style={styles.image}
+                            resizeMode="cover"
+                        />
+                    ))}
+                </ScrollView>
+
+                {/* Pagination Dots */}
+                {imageArray.length > 1 && (
+                    <View style={styles.pagination}>
+                        {imageArray.map((_, index) => (
+                            <View
+                                key={index}
+                                style={[
+                                    styles.paginationDot,
+                                    currentIndex === index && styles.paginationDotActive,
+                                ]}
+                            />
+                        ))}
+                    </View>
+                )}
 
                 {/* Discount Badge */}
                 {discount && (
@@ -132,12 +198,6 @@ export default function RestaurantCard({
                     </View>
                 </View>
 
-                {/* Price for Two */}
-                <View style={styles.priceRow}>
-                    <Ionicons name="wallet-outline" size={16} color={Colors.muted} />
-                    <Text style={styles.priceText}>₹{priceForTwo} for two</Text>
-                </View>
-
                 {/* Address */}
                 <View style={styles.addressRow}>
                     <Ionicons name="navigate-outline" size={14} color={Colors.muted} />
@@ -146,9 +206,11 @@ export default function RestaurantCard({
 
                 {/* Action Buttons */}
                 <View style={styles.actionRow}>
+                    {/* 📞 Call */}
                     <Pressable
                         style={({ pressed }) => [
-                            styles.callButton,
+                            styles.actionBtn,
+                            styles.callBtn,
                             { opacity: pressed ? 0.8 : 1 },
                         ]}
                         onPress={onCall}
@@ -157,17 +219,33 @@ export default function RestaurantCard({
                         <Text style={styles.callText}>Call</Text>
                     </Pressable>
 
+                    {/* 💬 WhatsApp */}
                     <Pressable
                         style={({ pressed }) => [
-                            styles.orderButton,
+                            styles.actionBtn,
+                            styles.whatsappBtn,
+                            { opacity: pressed ? 0.85 : 1 },
+                        ]}
+                    // onPress={onWhatsApp}
+                    >
+                        <Ionicons name="logo-whatsapp" size={16} color="#fff" />
+                        <Text style={styles.whatsappText}>WhatsApp</Text>
+                    </Pressable>
+
+                    {/* 📋 Menu */}
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.actionBtn,
+                            styles.menuBtn,
                             { opacity: pressed ? 0.9 : 1 },
                         ]}
-                        onPress={onPress}
+                        onPress={menuCard}
                     >
-                        <Text style={styles.orderText}>Order Now</Text>
-                        <Ionicons name="arrow-forward" size={16} color="#fff" />
+                        <Text style={styles.menuText}>Menu</Text>
+                        <Ionicons name="arrow-forward" size={14} color="#fff" />
                     </Pressable>
                 </View>
+
             </View>
         </Pressable>
     );
@@ -191,8 +269,28 @@ const styles = StyleSheet.create({
         position: "relative",
     },
     image: {
-        width: "100%",
-        height: "100%",
+        width: IMAGE_WIDTH,
+        height: 180,
+    },
+    pagination: {
+        position: "absolute",
+        bottom: 8,
+        left: 0,
+        right: 0,
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 6,
+    },
+    paginationDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: "rgba(255, 255, 255, 0.5)",
+    },
+    paginationDotActive: {
+        backgroundColor: "#fff",
+        width: 20,
     },
     discountBadge: {
         position: "absolute",
@@ -362,5 +460,35 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: "700",
         color: "#fff",
+    },
+    actionBtn: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        paddingVertical: 12,
+        borderRadius: 12,
+    },
+    callBtn: {
+        backgroundColor: Colors.primarySoft,
+        borderWidth: 1.5,
+        borderColor: Colors.primary,
+    },
+    whatsappBtn: {
+        backgroundColor: "#25D366",
+    },
+    whatsappText: {
+        color: "#fff",
+        fontSize: 14,
+        fontWeight: "700",
+    },
+    menuBtn: {
+        backgroundColor: Colors.primary,
+    },
+    menuText: {
+        color: "#fff",
+        fontSize: 14,
+        fontWeight: "700",
     },
 });

@@ -1,80 +1,160 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, Image, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    ImageBackground,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableOpacity,
+    StatusBar,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { Colors, Spacing, Typography } from "./theme";
-import Button from "./components/Button";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, {
+    FadeInUp,
+    FadeInDown,
+    withSpring,
+    useSharedValue,
+    useAnimatedStyle
+} from "react-native-reanimated";
+import { Colors } from "./theme";
 import { useAuth } from "./context/AuthContext";
+
+const { width, height } = Dimensions.get("window");
+
 export default function Login() {
     const router = useRouter();
     const [phoneNumber, setPhoneNumber] = useState("");
     const [error, setError] = useState("");
     const { login } = useAuth();
 
+    // Animation value for button press
+    const buttonScale = useSharedValue(1);
+
+    // --- LOGIC REMAINS EXACTLY THE SAME ---
     const handleSendOTP = async () => {
+        // Button bounce animation
+        buttonScale.value = withSpring(0.95, {}, () => {
+            buttonScale.value = withSpring(1);
+        });
+
         if (phoneNumber.length !== 10) {
             setError("Please enter a valid 10-digit mobile number");
             return;
         }
         try {
-            await login(phoneNumber); // ✅ generates OTP and saves in context
-            router.push("/otp"); // navigate to OTP screen
+            await login(phoneNumber);
+            router.push("/otp");
         } catch (err) {
             console.log(err);
         }
     };
 
+    const loginBanner = require("../assets/images/image.png")
 
     const handlePhoneChange = (text: string) => {
-        // Only allow digits and limit to 10
         const cleaned = text.replace(/\D/g, "").slice(0, 10);
         setPhoneNumber(cleaned);
         setError("");
     };
 
+    const animatedButtonStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ scale: buttonScale.value }],
+        };
+    });
+
     return (
         <View style={styles.container}>
-            {/* Illustration */}
-            <View style={styles.illustrationWrap}>
-                <Text style={styles.emoji}>🍕🍔🍱</Text>
-                <Text style={styles.appTitle}>FoodExpress</Text>
-                <Text style={styles.tagline}>Delicious food, delivered fast</Text>
-            </View>
+            <StatusBar barStyle="light-content" />
 
-            {/* Login Form */}
-            <View style={styles.formContainer}>
-                <Text style={styles.heading}>Welcome Back!</Text>
-                <Text style={styles.subtitle}>
-                    Enter your phone number to get started
-                </Text>
+            {/* 1. Background Image Section */}
+            <ImageBackground
+                source={loginBanner} // High quality food image
+                style={styles.backgroundImage}
+                resizeMode="cover"
+            >
+                <LinearGradient
+                    colors={["rgba(0,0,0,0.1)", "rgba(0,0,0,0.8)"]}
+                    style={styles.gradientOverlay}
+                >
+                    <Animated.View
+                        entering={FadeInDown.delay(200).duration(1000)}
+                        style={styles.headerContent}
+                    >
+                        {/* <Text style={styles.appTitle}>Trin Trin</Text> */}
+                        <Text style={styles.tagline}>Cravings? Solved.</Text>
+                    </Animated.View>
+                </LinearGradient>
+            </ImageBackground>
 
-                <View style={styles.inputWrapper}>
-                    <View style={styles.prefixWrap}>
-                        <Text style={styles.prefix}>+91</Text>
+            {/* 2. Login Form Bottom Sheet */}
+            <Animated.View
+                entering={FadeInUp.delay(400).duration(800).springify()}
+                style={styles.formContainer}
+            >
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    style={{ flex: 1 }}
+                >
+                    <View style={styles.formContent}>
+                        <View>
+                            <Text style={styles.heading}>Welcome Back 👋</Text>
+                            <Text style={styles.subtitle}>
+                                Login to access the best food around you.
+                            </Text>
+
+                            {/* Input Field */}
+                            <View style={[styles.inputWrapper, error ? styles.inputError : null]}>
+                                <View style={styles.prefixWrap}>
+                                    <Text style={styles.prefix}>🇮🇳 +91</Text>
+                                </View>
+                                <TextInput
+                                    placeholder="Mobile Number"
+                                    placeholderTextColor="#9CA3AF"
+                                    keyboardType="phone-pad"
+                                    value={phoneNumber}
+                                    onChangeText={handlePhoneChange}
+                                    style={styles.input}
+                                    maxLength={10}
+                                    selectionColor={Colors.primary}
+                                />
+                            </View>
+
+                            {error ? (
+                                <Animated.Text entering={FadeInUp} style={styles.errorText}>
+                                    {error}
+                                </Animated.Text>
+                            ) : null}
+                        </View>
+
+                        <View style={styles.bottomSection}>
+                            {/* Custom Animated Button */}
+                            <Animated.View style={[animatedButtonStyle]}>
+                                <TouchableOpacity
+                                    activeOpacity={0.9}
+                                    style={[
+                                        styles.button,
+                                        phoneNumber.length === 10 ? styles.buttonActive : styles.buttonInactive
+                                    ]}
+                                    onPress={handleSendOTP}
+                                >
+                                    <Text style={styles.buttonText}>Get OTP</Text>
+                                </TouchableOpacity>
+                            </Animated.View>
+
+                            <Text style={styles.termsText}>
+                                By continuing, you agree to our{" "}
+                                <Text style={styles.linkText} onPress={() => router.push("/signup")}>Terms</Text> &{" "}
+                                <Text style={styles.linkText}>Privacy Policy</Text>
+                            </Text>
+                        </View>
                     </View>
-                    <TextInput
-                        placeholder="10-digit mobile number"
-                        keyboardType="phone-pad"
-                        value={phoneNumber}
-                        onChangeText={handlePhoneChange}
-                        style={styles.input}
-                        maxLength={10}
-                    />
-                </View>
-
-                {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-                <Button
-                    title="Send OTP"
-                    onPress={handleSendOTP}
-                // disabled={phoneNumber.length !== 10}
-                />
-
-                <Text style={styles.termsText}>
-                    By continuing, you agree to our{" "}
-                    <Text style={styles.linkText}>Terms of Service</Text> and{" "}
-                    <Text style={styles.linkText}>Privacy Policy</Text>
-                </Text>
-            </View>
+                </KeyboardAvoidingView>
+            </Animated.View>
         </View>
     );
 }
@@ -82,89 +162,146 @@ export default function Login() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: "#000",
     },
-    illustrationWrap: {
-        flex: 0.4,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: Colors.primary,
-        borderBottomLeftRadius: 32,
-        borderBottomRightRadius: 32,
+    backgroundImage: {
+        width: width,
+        height: height * 0.55, // Takes up top 55%
+        justifyContent: "flex-end",
     },
-    emoji: {
-        fontSize: 64,
-        marginBottom: 16,
+    gradientOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: "flex-end",
+        paddingBottom: 60,
+        paddingHorizontal: 20,
+    },
+    headerContent: {
+        marginBottom: 40,
     },
     appTitle: {
-        fontSize: 32,
-        fontWeight: "700",
+        fontSize: 42,
+        fontWeight: "800",
         color: "#fff",
-        marginBottom: 8,
+        letterSpacing: -1,
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 10,
     },
     tagline: {
-        fontSize: 14,
+        fontSize: 18,
         color: "rgba(255, 255, 255, 0.9)",
         fontWeight: "500",
+        marginTop: 4,
     },
     formContainer: {
-        flex: 0.6,
-        padding: Spacing.xl,
-        justifyContent: "center",
+        flex: 1,
+        backgroundColor: Colors.background || "#fff",
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        marginTop: -40, // Overlap the image slightly
+        paddingHorizontal: 24,
+        paddingTop: 32,
+        // Modern Shadow
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: -4,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 20,
+    },
+    formContent: {
+        flex: 1,
+        justifyContent: "space-between", // Pushes button to bottom
+        paddingBottom: 40,
     },
     heading: {
         fontSize: 28,
         fontWeight: "700",
-        color: Colors.secondary,
+        color: "#1F2937",
         marginBottom: 8,
     },
     subtitle: {
-        fontSize: 14,
-        color: Colors.muted,
-        marginBottom: Spacing.xl,
+        fontSize: 15,
+        color: "#6B7280",
+        marginBottom: 32,
+        lineHeight: 22,
     },
     inputWrapper: {
         flexDirection: "row",
         alignItems: "center",
-        borderWidth: 2,
-        borderColor: Colors.border,
-        borderRadius: 12,
-        marginBottom: 12,
-        backgroundColor: Colors.card,
+        backgroundColor: "#F3F4F6", // Light gray background instead of border
+        borderRadius: 16,
+        height: 60,
+        borderWidth: 1,
+        borderColor: "transparent",
+    },
+    inputError: {
+        borderColor: "#EF4444",
+        backgroundColor: "#FEF2F2",
     },
     prefixWrap: {
         paddingHorizontal: 16,
-        paddingVertical: 16,
         borderRightWidth: 1,
-        borderRightColor: Colors.border,
+        borderRightColor: "#E5E7EB",
+        height: "50%",
+        justifyContent: "center",
     },
     prefix: {
         fontSize: 16,
         fontWeight: "600",
-        color: Colors.secondary,
+        color: "#374151",
     },
     input: {
         flex: 1,
-        padding: Spacing.md,
-        fontSize: 16,
-        color: Colors.secondary,
-        fontWeight: "500",
+        paddingHorizontal: 16,
+        fontSize: 18,
+        color: "#111827",
+        fontWeight: "600",
+        height: "100%",
     },
     errorText: {
         color: "#EF4444",
-        fontSize: 12,
-        marginBottom: 12,
+        fontSize: 13,
+        marginTop: 8,
         marginLeft: 4,
+        fontWeight: "500",
+    },
+    bottomSection: {
+        marginTop: 20,
+    },
+    button: {
+        height: 56,
+        borderRadius: 16,
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: Colors.primary || "#F59E0B",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 4,
+    },
+    buttonActive: {
+        backgroundColor: Colors.primary || "#F59E0B", // Fallback to orange if Colors.primary undefined
+    },
+    buttonInactive: {
+        backgroundColor: "#D1D5DB",
+        shadowOpacity: 0,
+    },
+    buttonText: {
+        fontSize: 18,
+        fontWeight: "700",
+        color: "#fff",
     },
     termsText: {
-        fontSize: 12,
-        color: Colors.muted,
+        fontSize: 13,
+        color: "#9CA3AF",
         textAlign: "center",
-        marginTop: Spacing.md,
-        lineHeight: 18,
+        marginTop: 24,
     },
     linkText: {
-        color: Colors.primary,
+        color: Colors.primary || "#F59E0B",
         fontWeight: "600",
     },
 });
