@@ -13,8 +13,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PinchGestureHandler } from "react-native-gesture-handler";
-import BackHeader from "../components/BackHeader";
 import { Colors } from "../theme";
+import BackHeader from "@/components/BackHeader";
 
 const { width, height } = Dimensions.get("window");
 
@@ -72,7 +72,7 @@ export default function MenuScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <BackHeader title="Restaurant Details" />
+            <BackHeader title="Restaurant Details" backTo={'/RestaurantList'} />
 
             <View style={styles.content}>
                 {/* Slider Container */}

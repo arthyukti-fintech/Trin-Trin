@@ -3,10 +3,10 @@ import { useRouter } from "expo-router";
 import { Colors, Spacing, Typography } from "../theme";
 
 import { ScrollView } from "react-native-gesture-handler";
-import FoodHeading from "../components/FoodHeading";
+import CompactFoodHeader from "@/components/HomeHeader/HomeHeader";
+import FoodHeading from "@/components/FoodHeading";
+import RestaurantCard from "@/components/RestaurantCard";
 import { restaurants } from "../data/restaurants";
-import CompactFoodHeader from "../components/HomeHeader/HomeHeader";
-import RestaurantCard from "../components/RestaurantCard";
 
 export default function Home() {
     const router = useRouter();

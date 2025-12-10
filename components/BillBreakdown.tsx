@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { Colors, Spacing, Typography } from "../theme";
+import { Colors, Spacing, Typography } from "@/app/theme";
 
 type Props = {
     bill: number;

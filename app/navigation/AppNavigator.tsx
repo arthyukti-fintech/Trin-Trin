@@ -1,8 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
-import CompactFoodHeader from '../components/HomeHeader';
 import { useAuth } from '../context/AuthContext';
 import LoginScreen from '../login';
+import CompactFoodHeader from '@/components/HomeHeader/HomeHeader';
 type RootStackParamList = {
   Home: undefined;
   Login: undefined;
