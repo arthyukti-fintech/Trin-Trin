@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "@/app/theme";
+import { router } from "expo-router";
 
 export default function CompactFoodHeader() {
     const navigation = useNavigation();
@@ -44,11 +45,13 @@ export default function CompactFoodHeader() {
         return () => clearInterval(interval);
     }, []);
 
-    const savedAddresses = [
-        { id: 1, label: "Home", address: "123 MG Road, Bangalore", icon: "home" },
-        { id: 2, label: "Work", address: "456 Brigade Road, Bangalore", icon: "briefcase" },
-        { id: 3, label: "Mom's", address: "789 Koramangala, Bangalore", icon: "heart" },
-    ];
+    type IconName = React.ComponentProps<typeof Ionicons>["name"];
+
+  const savedAddresses: { id: number; label: string; address: string; icon: IconName }[] = [
+    { id: 1, label: "Home", address: "123 MG Road", icon: "home" },
+    { id: 2, label: "Work", address: "456 Brigade Road", icon: "briefcase" },
+    { id: 3, label: "Mom's", address: "789 Koramangala", icon: "heart" },
+];
 
     const restaurants = [
         { id: 1, name: "Pizza Palace", cuisine: "Italian", rating: 4.5, time: "30 min", emoji: "🍕" },
@@ -97,7 +100,7 @@ export default function CompactFoodHeader() {
                 <View style={styles.topRow}>
                     {/* Left - Profile */}
                     <Pressable
-                        onPress={() => setShowProfileModal(true)}
+                        onPress={() => router.push("/Profile")}
                         style={({ pressed }) => [
                             styles.profileSection,
                             { opacity: pressed ? 0.8 : 1 },
@@ -154,56 +157,7 @@ export default function CompactFoodHeader() {
             </View>
 
             {/* Profile Modal */}
-            <Modal
-                visible={showProfileModal}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setShowProfileModal(false)}
-            >
-                <Pressable style={styles.modalOverlay} onPress={() => setShowProfileModal(false)}>
-                    <View style={styles.profileModal}>
-                        <View style={styles.profileHeader}>
-                            <View style={styles.largeAvatar}>
-                                <Text style={styles.largeAvatarText}>
-                                    {userName.charAt(0).toUpperCase()}
-                                </Text>
-                            </View>
-                            <Text style={styles.profileName}>{userName}</Text>
-                            <Text style={styles.profileEmail}>{userEmail}</Text>
-
-                            <View style={styles.rewardsCard}>
-                                <Ionicons name="star" size={24} color="#FFD700" />
-                                <View style={styles.rewardsInfo}>
-                                    <Text style={styles.rewardsLabel}>Reward Points</Text>
-                                    <Text style={styles.rewardsValue}>{rewardPoints}</Text>
-                                </View>
-                            </View>
-                        </View>
-
-                        <View style={styles.profileMenu}>
-                            {[
-                                { icon: "person-outline", label: "Edit Profile", color: "#6366F1" },
-                                { icon: "receipt-outline", label: "My Orders", color: "#10B981" },
-                                { icon: "heart-outline", label: "Favorites", color: "#EF4444" },
-                                { icon: "wallet-outline", label: "Wallet", color: "#F59E0B" },
-                                { icon: "settings-outline", label: "Settings", color: "#6B7280" },
-                            ].map((item, i) => (
-                                <Pressable key={i} style={styles.menuItem}>
-                                    <View style={[styles.menuIcon, { backgroundColor: item.color + "20" }]}>
-                                        <Ionicons name={item.icon} size={20} color={item.color} />
-                                    </View>
-                                    <Text style={styles.menuLabel}>{item.label}</Text>
-                                    <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
-                                </Pressable>
-                            ))}
-                        </View>
-
-                        <Pressable style={styles.closeButton} onPress={() => setShowProfileModal(false)}>
-                            <Text style={styles.closeButtonText}>Close</Text>
-                        </Pressable>
-                    </View>
-                </Pressable>
-            </Modal>
+           
 
             {/* Location Dropdown Modal */}
             <Modal

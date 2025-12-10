@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, ViewStyle, TextStyle } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -6,16 +6,22 @@ import { Colors, Spacing, Typography } from "@/app/theme";
 
 type BackHeaderProps = {
     title?: string;
-    /** Explicit navigation target (optional) */
     backTo?: Href;
-    /** Replace instead of push (OTP, payment success, etc.) */
     replace?: boolean;
+
+    /** NEW: Custom styling overrides */
+    containerStyle?: ViewStyle;
+    titleStyle?: TextStyle;
+    iconStyle?: ViewStyle;
 };
 
 export default function BackHeader({
     title,
     backTo,
     replace = false,
+    containerStyle,
+    titleStyle,
+    iconStyle,
 }: BackHeaderProps) {
     const router = useRouter();
 
@@ -29,12 +35,16 @@ export default function BackHeader({
 
     return (
         <SafeAreaView edges={["top"]} style={styles.safe}>
-            <View style={styles.container}>
-                <Pressable onPress={handleBack} style={styles.iconWrap}>
+            <View style={[styles.container, containerStyle]}>
+                <Pressable onPress={handleBack} style={[styles.iconWrap, iconStyle]}>
                     <Ionicons name="arrow-back" size={24} color={Colors.secondary} />
                 </Pressable>
 
-                {title && <Text style={styles.title}>{title}</Text>}
+                {title && (
+                    <Text style={[styles.title, titleStyle]}>
+                        {title}
+                    </Text>
+                )}
             </View>
         </SafeAreaView>
     );
