@@ -47,11 +47,11 @@ export default function CompactFoodHeader() {
 
     type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
-  const savedAddresses: { id: number; label: string; address: string; icon: IconName }[] = [
-    { id: 1, label: "Home", address: "123 MG Road", icon: "home" },
-    { id: 2, label: "Work", address: "456 Brigade Road", icon: "briefcase" },
-    { id: 3, label: "Mom's", address: "789 Koramangala", icon: "heart" },
-];
+    const savedAddresses: { id: number; label: string; address: string; icon: IconName }[] = [
+        { id: 1, label: "Home", address: "123 MG Road", icon: "home" },
+        { id: 2, label: "Work", address: "456 Brigade Road", icon: "briefcase" },
+        { id: 3, label: "Mom's", address: "789 Koramangala", icon: "heart" },
+    ];
 
     const restaurants = [
         { id: 1, name: "Pizza Palace", cuisine: "Italian", rating: 4.5, time: "30 min", emoji: "🍕" },
@@ -157,7 +157,7 @@ export default function CompactFoodHeader() {
             </View>
 
             {/* Profile Modal */}
-           
+
 
             {/* Location Dropdown Modal */}
             <Modal
@@ -254,7 +254,7 @@ export default function CompactFoodHeader() {
 
 const styles = StyleSheet.create({
     safe: {
-        backgroundColor: "#FAFAFA",
+        backgroundColor: Colors.accentSoft,
     },
 
     orderBanner: {

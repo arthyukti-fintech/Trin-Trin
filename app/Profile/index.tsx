@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View, ScrollView } from "react-native";
 import { Colors } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
 import BackHeader from "@/components/BackHeader";
+import { LinearGradient } from "expo-linear-gradient";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -10,149 +11,458 @@ export default function ProfileScreen() {
   const userName = "Arman";
   const userEmail = "arman@example.com";
   const rewardPoints = 1250;
+  const memberSince = "Member since Dec 2023";
 
-  const profileMenuItems: { icon: IconName; label: string; color: string }[] = [
-    { icon: "person-outline", label: "Edit Profile", color: "#6366F1" },
-    { icon: "receipt-outline", label: "My Orders", color: "#10B981" },
-    { icon: "heart-outline", label: "Favorites", color: "#EF4444" },
-    { icon: "wallet-outline", label: "Wallet", color: "#F59E0B" },
-    { icon: "settings-outline", label: "Settings", color: "#6B7280" },
+  const quickActions = [
+    { icon: "calendar-outline", label: "Bookings", count: "3", color: "#E23744" },
+    { icon: "gift-outline", label: "Offers", count: "12", color: "#FF6B35" },
+    { icon: "star", label: "Reviews", count: "8", color: "#FFB800" },
+    { icon: "ticket-outline", label: "Vouchers", count: "5", color: "#00AC4F" },
   ];
 
+  const profileMenuItems: {
+    icon: IconName;
+    label: string;
+    subtitle?: string;
+    color: string;
+    badge?: string;
+  }[] = [
+      {
+        icon: "person-outline",
+        label: "Manage Account",
+        subtitle: "Profile, security & preferences",
+        color: "#E23744"
+      },
+      {
+        icon: "receipt-outline",
+        label: "My Orders",
+        subtitle: "View your order history",
+        color: "#00AC4F",
+        badge: "3"
+      },
+      {
+        icon: "heart-outline",
+        label: "Favorite Restaurants",
+        subtitle: "Your saved places",
+        color: "#FF6B35"
+      },
+      {
+        icon: "location-outline",
+        label: "Addresses",
+        subtitle: "Manage delivery locations",
+        color: "#1E90FF"
+      },
+      {
+        icon: "wallet-outline",
+        label: "Payments & Refunds",
+        subtitle: "Payment methods & history",
+        color: "#9C27B0"
+      },
+      {
+        icon: "shield-checkmark-outline",
+        label: "Trin Trin Pro",
+        subtitle: "Exclusive benefits & offers",
+        color: "#FFB800",
+        badge: "NEW"
+      },
+      {
+        icon: "help-circle-outline",
+        label: "Help & Support",
+        subtitle: "FAQs & contact us",
+        color: "#6B7280"
+      },
+      {
+        icon: "settings-outline",
+        label: "Settings",
+        subtitle: "App preferences",
+        color: "#374151"
+      },
+    ];
+
   return (
-    <ScrollView style={styles.container}>
-      <BackHeader containerStyle={{backgroundColor:'#ffff'}}/>
-      {/* Header */}
-      <View style={styles.profileHeader}>
-        <View style={styles.largeAvatar}>
-          <Text style={styles.largeAvatarText}>
-            {userName.charAt(0).toUpperCase()}
-          </Text>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Gradient Header */}
+        <LinearGradient
+          colors={[Colors.primary, Colors.primary]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientHeader}
+        >
+          <BackHeader title="Profile" titleStyle={{ color: "#fff" }} />
+          <View style={styles.profileHeader}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.largeAvatar}>
+                <Text style={styles.largeAvatarText}>
+                  {userName.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+              <Pressable style={styles.editAvatarButton}>
+                <Ionicons name="camera" size={16} color="#fff" />
+              </Pressable>
+            </View>
+
+            <Text style={styles.profileName}>{userName}</Text>
+            <Text style={styles.profileEmail}>{userEmail}</Text>
+            <Text style={styles.memberSince}>{memberSince}</Text>
+          </View>
+        </LinearGradient>
+
+        {/* Rewards Card */}
+        <View style={styles.rewardsSection}>
+          <LinearGradient
+            colors={['#FFB800', '#FFA000']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.rewardsCard}
+          >
+            <View style={styles.rewardsLeft}>
+              <Ionicons name="trophy" size={32} color="#fff" />
+              <View style={styles.rewardsInfo}>
+                <Text style={styles.rewardsLabel}>Reward Points</Text>
+                <Text style={styles.rewardsValue}>{rewardPoints.toLocaleString()}</Text>
+              </View>
+            </View>
+            <Pressable style={styles.redeemButton}>
+              <Text style={styles.redeemButtonText}>Redeem</Text>
+              <Ionicons name="arrow-forward" size={16} color="#FFB800" />
+            </Pressable>
+          </LinearGradient>
         </View>
 
-        <Text style={styles.profileName}>{userName}</Text>
-        <Text style={styles.profileEmail}>{userEmail}</Text>
-
-        <View style={styles.rewardsCard}>
-          <Ionicons name="star" size={24} color="#FFD700" />
-          <View style={styles.rewardsInfo}>
-            <Text style={styles.rewardsLabel}>Reward Points</Text>
-            <Text style={styles.rewardsValue}>{rewardPoints}</Text>
+        {/* Quick Actions */}
+        <View style={styles.quickActionsSection}>
+          <View style={styles.quickActionsGrid}>
+            {quickActions.map((action, i) => (
+              <Pressable key={i} style={styles.quickActionCard}>
+                <View style={[styles.quickActionIcon, { backgroundColor: action.color + '15' }]}>
+                  <Ionicons name={action.icon} size={24} color={action.color} />
+                </View>
+                <Text style={styles.quickActionCount}>{action.count}</Text>
+                <Text style={styles.quickActionLabel}>{action.label}</Text>
+              </Pressable>
+            ))}
           </View>
         </View>
-      </View>
 
-      {/* Menu */}
-      <View style={styles.profileMenu}>
-        {profileMenuItems.map((item, i) => (
-          <Pressable key={i} style={styles.menuItem}>
-            <View style={[styles.menuIcon, { backgroundColor: item.color + "20" }]}>
-              <Ionicons name={item.icon} size={20} color={item.color} />
-            </View>
-            <Text style={styles.menuLabel}>{item.label}</Text>
-            <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
+        {/* Menu Items */}
+        <View style={styles.profileMenu}>
+          {profileMenuItems.map((item, i) => (
+            <Pressable key={i} style={styles.menuItem}>
+              <View style={[styles.menuIcon, { backgroundColor: item.color + '15' }]}>
+                <Ionicons name={item.icon} size={22} color={item.color} />
+              </View>
+              <View style={styles.menuContent}>
+                <View style={styles.menuTitleRow}>
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  {item.badge && (
+                    <View style={[styles.badge, item.badge === 'NEW' && styles.newBadge]}>
+                      <Text style={styles.badgeText}>{item.badge}</Text>
+                    </View>
+                  )}
+                </View>
+                {item.subtitle && (
+                  <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                )}
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={Colors.muted} />
+            </Pressable>
+          ))}
+
+          {/* Logout Button */}
+          <Pressable style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={22} color="#E23744" />
+            <Text style={styles.logoutText}>Logout</Text>
           </Pressable>
-        ))}
-      </View>
-    </ScrollView>
+        </View>
+
+        {/* App Version */}
+        <View style={styles.footer}>
+          <Text style={styles.versionText}>App Version 2.1.0</Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#ffff",
     flex: 1,
+    backgroundColor: Colors.accentSoft
+  },
+
+  scrollView: {
+    flex: 1,
+  },
+
+  gradientHeader: {
+    paddingTop: 20,
+    paddingBottom: 40,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
 
   profileHeader: {
     alignItems: "center",
     paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 30,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+  },
+
+  avatarContainer: {
+    position: "relative",
+    marginBottom: 16,
   },
 
   largeAvatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: Colors.primary,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.3)",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 12,
+    borderWidth: 4,
+    borderColor: "rgba(255,255,255,0.5)",
   },
 
   largeAvatarText: {
     color: "#fff",
-    fontSize: 36,
+    fontSize: 40,
     fontWeight: "700",
   },
 
+  editAvatarButton: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#E23744",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderColor: "#fff",
+  },
+
   profileName: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "700",
-    color: Colors.secondary,
+    color: "#fff",
     marginBottom: 4,
   },
 
   profileEmail: {
-    fontSize: 14,
-    color: Colors.muted,
-    marginBottom: 16,
+    fontSize: 15,
+    color: "rgba(255,255,255,0.9)",
+    marginBottom: 6,
+  },
+
+  memberSince: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.8)",
+    fontWeight: "500",
+  },
+
+  rewardsSection: {
+    paddingHorizontal: 20,
+    marginTop: -30,
+    marginBottom: 20,
   },
 
   rewardsCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF7ED",
-    borderRadius: 12,
-    padding: 16,
-    width: "100%",
-    marginTop: 10,
+    justifyContent: "space-between",
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+
+  rewardsLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
   },
 
   rewardsInfo: {
-    marginLeft: 12,
+    marginLeft: 16,
   },
 
   rewardsLabel: {
-    fontSize: 12,
-    color: Colors.muted,
+    fontSize: 13,
+    color: "rgba(255,255,255,0.9)",
     marginBottom: 4,
+    fontWeight: "500",
   },
 
   rewardsValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "700",
-    color: Colors.primary,
+    color: "#fff",
+  },
+
+  redeemButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
+  },
+
+  redeemButtonText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#FFB800",
+  },
+
+  quickActionsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+
+  quickActionsGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+
+  quickActionCard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  quickActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+
+  quickActionCount: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: Colors.secondary,
+    marginBottom: 4,
+  },
+
+  quickActionLabel: {
+    fontSize: 12,
+    color: Colors.muted,
+    fontWeight: "500",
+    textAlign: "center",
   },
 
   profileMenu: {
-    padding: 16,
+    backgroundColor: "#fff",
+    marginHorizontal: 20,
+    borderRadius: 16,
+    padding: 8,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
 
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    paddingHorizontal: 12,
+    borderRadius: 12,
   },
 
   menuIcon: {
-    width: 42,
-    height: 42,
+    width: 46,
+    height: 46,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 14,
   },
 
-  menuLabel: {
+  menuContent: {
     flex: 1,
+  },
+
+  menuTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  menuLabel: {
     fontSize: 16,
     fontWeight: "600",
     color: Colors.secondary,
+  },
+
+  menuSubtitle: {
+    fontSize: 13,
+    color: Colors.muted,
+    marginTop: 2,
+  },
+
+  badge: {
+    backgroundColor: "#E23744",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+
+  newBadge: {
+    backgroundColor: "#FFB800",
+  },
+
+  badgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#fff",
+  },
+
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginTop: 8,
+    gap: 10,
+  },
+
+  logoutText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#E23744",
+  },
+
+  footer: {
+    alignItems: "center",
+    paddingVertical: 30,
+  },
+
+  versionText: {
+    fontSize: 13,
+    color: Colors.muted,
   },
 });

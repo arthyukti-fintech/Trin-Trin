@@ -253,7 +253,7 @@ export default function RestaurantCard({
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: Colors.card,
+        backgroundColor: Colors.background,
         borderRadius: 16,
         marginBottom: Spacing.md,
         shadowColor: Colors.shadow,
@@ -474,12 +474,12 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.primarySoft,
         borderWidth: 1.5,
         borderColor: Colors.primary,
-         fontSize: 12,
+        fontSize: 12,
     },
     whatsappBtn: {
         backgroundColor: "#25D366",
-         paddingHorizontal: 12,
-        
+        paddingHorizontal: 12,
+
     },
     whatsappText: {
         color: "#fff",

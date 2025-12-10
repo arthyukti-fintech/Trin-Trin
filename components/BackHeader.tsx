@@ -37,7 +37,7 @@ export default function BackHeader({
         <SafeAreaView edges={["top"]} style={styles.safe}>
             <View style={[styles.container, containerStyle]}>
                 <Pressable onPress={handleBack} style={[styles.iconWrap, iconStyle]}>
-                    <Ionicons name="arrow-back" size={24} color={Colors.secondary} />
+                    <Ionicons name="arrow-back" size={24} color={Colors.border} />
                 </Pressable>
 
                 {title && (
@@ -52,7 +52,7 @@ export default function BackHeader({
 
 const styles = StyleSheet.create({
     safe: {
-        backgroundColor: Colors.background,
+        // backgroundColor: Colors.background,
     },
     container: {
         flexDirection: "row",
