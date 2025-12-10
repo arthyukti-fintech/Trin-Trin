@@ -25,7 +25,6 @@ import Animated, {
 
 // Keep existing imports
 import { Colors, Spacing } from "../theme";
-import Button from "../components/Button"; // Or we can use the custom button style inline for consistency
 import { useAuth } from "../context/AuthContext";
 
 const { width, height } = Dimensions.get("window");

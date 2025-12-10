@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, Image, ScrollView, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Spacing, Typography } from "../theme";
 import { router } from "expo-router";
+import { Colors, Spacing } from "@/app/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const IMAGE_WIDTH = SCREEN_WIDTH - 32; // Accounting for card padding

@@ -1,9 +1,9 @@
 import { View, StyleSheet, Text } from "react-native";
 import { Colors, Spacing, Typography } from "../theme";
 import { router } from "expo-router";
-import BillBreakdown from "../components/BillBreakdown";
-import Button from "../components/Button";
-import BackHeader from "../components/BackHeader";
+import BackHeader from "@/components/BackHeader";
+import BillBreakdown from "@/components/BillBreakdown";
+import Button from "@/components/Button";
 
 export default function BillReceived() {
     return (

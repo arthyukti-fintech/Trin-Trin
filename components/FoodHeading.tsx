@@ -1,7 +1,6 @@
+import { Colors, Spacing } from "@/app/theme";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Colors, Spacing } from "../theme";
-
 type FoodHeadingProps = {
     title: string;
     subtitle?: string;
