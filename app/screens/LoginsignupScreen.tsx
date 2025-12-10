@@ -49,13 +49,11 @@
 //                     <Text style={styles.loginText}>Login</Text>
 //                 </TouchableOpacity>
 
-//                 {/* SIGNUP BUTTON */}
-//                 <TouchableOpacity style={styles.signupBtn} onPress={() => router.push('/')}>
+                {/* SIGNUP BUTTON */}
+//                 <TouchableOpacity style={styles.signupBtn} onPress={() => router.push('/signup')}>
 //                     <Text style={styles.signupText}>Sign Up</Text>
 //                 </TouchableOpacity>
 //             </View>
-
-
 //         </View>
 //     );
 // }
