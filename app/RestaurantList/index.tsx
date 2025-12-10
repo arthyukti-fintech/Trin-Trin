@@ -1,11 +1,12 @@
 import { View, FlatList, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { Colors, Spacing, Typography } from "../theme";
-import RestaurantCard from "../components/RestaurantCard";
+
 import { ScrollView } from "react-native-gesture-handler";
 import FoodHeading from "../components/FoodHeading";
 import { restaurants } from "../data/restaurants";
 import CompactFoodHeader from "../components/HomeHeader/HomeHeader";
+import RestaurantCard from "../components/RestaurantCard";
 
 export default function Home() {
     const router = useRouter();

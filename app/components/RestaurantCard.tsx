@@ -81,7 +81,7 @@ export default function RestaurantCard({
     };
 
     const menuCard = () => {
-        router.push("/MenuCard/menuCard");
+        router.push("/MenuCard");
     };
 
     const handleScroll = (event: any) => {
@@ -241,7 +241,7 @@ export default function RestaurantCard({
                         ]}
                         onPress={menuCard}
                     >
-                        <Text style={styles.menuText}>Menu</Text>
+                        <Text style={styles.menuText}>Menu </Text>
                         <Ionicons name="arrow-forward" size={14} color="#fff" />
                     </Pressable>
                 </View>

@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-    View,
-    Text,
-    TextInput,
-    StyleSheet,
-    ImageBackground,
     Dimensions,
+    ImageBackground,
     KeyboardAvoidingView,
     Platform,
-    TouchableOpacity,
     StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
-    FadeInUp,
     FadeInDown,
-    withSpring,
+    FadeInUp,
+    useAnimatedStyle,
     useSharedValue,
-    useAnimatedStyle
+    withSpring
 } from "react-native-reanimated";
-import { Colors } from "./theme";
-import { useAuth } from "./context/AuthContext";
-import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../context/AuthContext";
+import { Colors } from "../theme";
 
 const { width, height } = Dimensions.get("window");
 
@@ -54,7 +54,7 @@ export default function Login() {
         }
     };
 
-    const loginBanner = require("../assets/images/image.png")
+    const loginBanner = require("../../assets/images/image.png")
 
     const handlePhoneChange = (text: string) => {
         const cleaned = text.replace(/\D/g, "").slice(0, 10);

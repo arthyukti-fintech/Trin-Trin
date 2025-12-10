@@ -1,14 +1,7 @@
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/AuthContext";
 
 export default function TabLayout() {
-  const { authState } = useAuth();
-  const isLoggedIn = authState.isAuthenticated;
-
-  if (!isLoggedIn) {
-    return <Redirect href="/screens/LoginsignupScreen" />;
-  }
   return (
     <Tabs
       screenOptions={({ route }) => ({

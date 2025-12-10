@@ -24,9 +24,9 @@ import Animated, {
 } from "react-native-reanimated";
 
 // Keep existing imports
-import { Colors, Spacing } from "./theme";
-import Button from "./components/Button"; // Or we can use the custom button style inline for consistency
-import { useAuth } from "./context/AuthContext";
+import { Colors, Spacing } from "../theme";
+import Button from "../components/Button"; // Or we can use the custom button style inline for consistency
+import { useAuth } from "../context/AuthContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -96,7 +96,7 @@ export default function Otp() {
         try {
             console.log("Enter in verify");
             await verifyOtp(enteredOtp);
-            router.push("/(tabs)");
+            router.push("/RestaurantList");
         } catch (err) {
             setError("Invalid OTP Code");
             setOtp(["", "", "", "", "", ""]);
@@ -185,7 +185,10 @@ export default function Otp() {
                                 {otp.map((digit, index) => (
                                     <TextInput
                                         key={index}
-                                        ref={(ref) => (inputRefs.current[index] = ref)}
+                                        ref={(ref) => {
+                                            inputRefs.current[index] = ref;
+                                        }}
+
                                         value={digit}
                                         onChangeText={(text) => handleOtpChange(text, index)}
                                         keyboardType="number-pad"
