@@ -474,13 +474,16 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.primarySoft,
         borderWidth: 1.5,
         borderColor: Colors.primary,
+         fontSize: 12,
     },
     whatsappBtn: {
         backgroundColor: "#25D366",
+       
+        
     },
     whatsappText: {
         color: "#fff",
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: "700",
     },
     menuBtn: {
@@ -488,7 +491,7 @@ const styles = StyleSheet.create({
     },
     menuText: {
         color: "#fff",
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: "700",
     },
 });
