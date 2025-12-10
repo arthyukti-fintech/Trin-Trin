@@ -6,9 +6,8 @@ export default function TabLayout() {
   const { authState } = useAuth();
   const isLoggedIn = authState.isAuthenticated;
 
-
   if (!isLoggedIn) {
-    return <Redirect href="/login" />;
+    return <Redirect href="/screens/LoginsignupScreen" />;
   }
   return (
     <Tabs

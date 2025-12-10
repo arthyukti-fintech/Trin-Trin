@@ -22,6 +22,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Colors } from "./theme";
 import { useAuth } from "./context/AuthContext";
+import { Ionicons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
@@ -85,6 +86,12 @@ export default function Login() {
                         entering={FadeInDown.delay(200).duration(1000)}
                         style={styles.headerContent}
                     >
+                        <TouchableOpacity
+                            onPress={() => router.back()}
+                            style={styles.backButton}
+                        >
+                            <Ionicons name="arrow-back" size={24} color="#fff" />
+                        </TouchableOpacity>
                         {/* <Text style={styles.appTitle}>Trin Trin</Text> */}
                         <Text style={styles.tagline}>Cravings? Solved.</Text>
                     </Animated.View>
@@ -303,5 +310,14 @@ const styles = StyleSheet.create({
     linkText: {
         color: Colors.primary || "#F59E0B",
         fontWeight: "600",
+    },
+    backButton: {
+        marginBottom: 16,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
