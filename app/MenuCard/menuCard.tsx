@@ -1,502 +1,328 @@
-
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     Image,
+    Dimensions,
     Pressable,
-    SafeAreaView,
+    Modal,
+    Animated,
+    Text,
+    ImageSourcePropType,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { Colors, Spacing } from "../theme";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { PinchGestureHandler } from "react-native-gesture-handler";
 import BackHeader from "../components/BackHeader";
+import { Colors } from "../theme";
 
-// ============================================
-// MENU SCREEN COMPONENT
-// ============================================
-type MenuScreenProps = {
-    restaurantName?: string;
+const { width, height } = Dimensions.get("window");
+
+// ✅ Define image type
+type ImageItem = {
+    id: string;
+    source: ImageSourcePropType | string;
 };
 
-export default function MenuScreen({ restaurantName = "Restaurant" }: MenuScreenProps) {
-    const [selectedCategory, setSelectedCategory] = useState("All");
+// ✅ Mixed local and remote images
+const IMAGES: ImageItem[] = [
+    { id: "1", source: require("../../assets/images/menu.png") },
+    {
+        id: "2",
+        source: "https://elledecor.in/wp-content/uploads/2024/11/VASANTABHAVAN1.jpg"
+    },
+    { id: "3", source: require("../../assets/images/menu.png") },
+    {
+        id: "4",
+        source: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/27/d5/bb/74/lounge.jpg?w=900&h=500&s=1"
+    },
+];
 
-    const categories = ["All", "Starters", "Main Course", "Desserts", "Beverages"];
+// ✅ Helper function to normalize image source
+const getImageSource = (source: ImageSourcePropType | string): ImageSourcePropType => {
+    if (typeof source === 'string') {
+        return { uri: source };
+    }
+    return source;
+};
 
-    const menuData = [
-        // Starters
-        {
-            id: "1",
-            category: "Starters",
-            name: "Paneer Tikka",
-            description: "Marinated cottage cheese cubes grilled to perfection with bell peppers",
-            price: 249,
-            image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400",
-            isVeg: true,
-            isBestseller: true,
-            spicyLevel: 2,
-        },
-        {
-            id: "2",
-            category: "Starters",
-            name: "Chicken Malai Tikka",
-            description: "Creamy chicken pieces marinated in cheese and aromatic spices",
-            price: 299,
-            image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400",
-            isVeg: false,
-            isBestseller: true,
-            spicyLevel: 1,
-        },
-        {
-            id: "3",
-            category: "Starters",
-            name: "Crispy Corn",
-            description: "Golden fried corn kernels tossed with spices and herbs",
-            price: 189,
-            image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400",
-            isVeg: true,
-            isBestseller: false,
-            spicyLevel: 1,
-        },
-        // Main Course
-        {
-            id: "4",
-            category: "Main Course",
-            name: "Butter Chicken",
-            description: "Tender chicken in rich tomato gravy with butter and cream",
-            price: 349,
-            image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400",
-            isVeg: false,
-            isBestseller: true,
-            spicyLevel: 1,
-        },
-        {
-            id: "5",
-            category: "Main Course",
-            name: "Dal Makhani",
-            description: "Creamy black lentils slow-cooked overnight with spices",
-            price: 249,
-            image: "https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=400",
-            isVeg: true,
-            isBestseller: true,
-            spicyLevel: 0,
-        },
-        {
-            id: "6",
-            category: "Main Course",
-            name: "Biryani",
-            description: "Fragrant basmati rice cooked with aromatic spices and meat",
-            price: 399,
-            image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400",
-            isVeg: false,
-            isBestseller: true,
-            spicyLevel: 2,
-        },
-        {
-            id: "7",
-            category: "Main Course",
-            name: "Palak Paneer",
-            description: "Soft paneer cubes in creamy spinach gravy with spices",
-            price: 269,
-            image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400",
-            isVeg: true,
-            isBestseller: false,
-            spicyLevel: 1,
-        },
-        // Desserts
-        {
-            id: "8",
-            category: "Desserts",
-            name: "Gulab Jamun",
-            description: "Soft milk solid dumplings soaked in rose-flavored sugar syrup",
-            price: 99,
-            image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400",
-            isVeg: true,
-            isBestseller: true,
-            spicyLevel: 0,
-        },
-        {
-            id: "9",
-            category: "Desserts",
-            name: "Chocolate Brownie",
-            description: "Rich chocolate brownie topped with vanilla ice cream",
-            price: 149,
-            image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400",
-            isVeg: true,
-            isBestseller: true,
-            spicyLevel: 0,
-        },
-        {
-            id: "10",
-            category: "Desserts",
-            name: "Rasmalai",
-            description: "Soft cheese patties soaked in sweetened, thickened milk",
-            price: 129,
-            image: "https://images.unsplash.com/photo-1589227365533-cee0c8b4b85e?w=400",
-            isVeg: true,
-            isBestseller: false,
-            spicyLevel: 0,
-        },
-        // Beverages
-        {
-            id: "11",
-            category: "Beverages",
-            name: "Fresh Lime Soda",
-            description: "Refreshing lime juice with soda and a hint of mint",
-            price: 79,
-            image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400",
-            isVeg: true,
-            isBestseller: false,
-            spicyLevel: 0,
-        },
-        {
-            id: "12",
-            category: "Beverages",
-            name: "Mango Lassi",
-            description: "Creamy yogurt drink blended with fresh mango pulp",
-            price: 99,
-            image: "https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=400",
-            isVeg: true,
-            isBestseller: true,
-            spicyLevel: 0,
-        },
-    ];
+export default function MenuScreen() {
+    const scrollRef = useRef<ScrollView>(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [previewImage, setPreviewImage] = useState<ImageSourcePropType | string | null>(null);
 
-    const filteredMenu = selectedCategory === "All"
-        ? menuData
-        : menuData.filter(item => item.category === selectedCategory);
+    // Auto slide every 4s
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const nextIndex = (activeIndex + 1) % IMAGES.length;
+            scrollRef.current?.scrollTo({
+                x: nextIndex * width,
+                animated: true,
+            });
+            setActiveIndex(nextIndex);
+        }, 4000);
 
-    const renderSpicyIcons = (level: number) => {
-        if (level === 0) return null;
-        return (
-            <View style={styles.spicyContainer}>
-                {[...Array(level)].map((_, i) => (
-                    <Text key={i} style={styles.spicyIcon}>🌶️</Text>
-                ))}
-            </View>
-        );
+        return () => clearInterval(interval);
+    }, [activeIndex]);
+
+    const onScrollEnd = (e: any) => {
+        const index = Math.round(e.nativeEvent.contentOffset.x / width);
+        setActiveIndex(index);
     };
 
     return (
         <SafeAreaView style={styles.container}>
-            <BackHeader title={"Menu"} />
+            <BackHeader title="Restaurant Details" />
 
-            {/* Category Tabs */}
-            <View style={styles.categoriesWrapper}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.categoriesContainer}
-                >
-                    {categories.map((category) => (
-                        <Pressable
-                            key={category}
-                            onPress={() => setSelectedCategory(category)}
-                            style={[
-                                styles.categoryTab,
-                                selectedCategory === category && styles.categoryTabActive,
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.categoryText,
-                                    selectedCategory === category && styles.categoryTextActive,
-                                ]}
+            <View style={styles.content}>
+                {/* Slider Container */}
+                <View style={styles.sliderContainer}>
+                    <ScrollView
+                        ref={scrollRef}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        onMomentumScrollEnd={onScrollEnd}
+                        style={styles.scrollView}
+                    >
+                        {IMAGES.map((img) => (
+                            <Pressable
+                                key={img.id}
+                                onPress={() => setPreviewImage(img.source)}
+                                style={styles.imageWrapper}
                             >
-                                {category}
-                            </Text>
-                        </Pressable>
-                    ))}
-                </ScrollView>
-            </View>
+                                <View style={styles.imageCard}>
+                                    <Image
+                                        source={getImageSource(img.source)} // ✅ Use helper
+                                        style={styles.image}
+                                        resizeMode="contain"
+                                    />
+                                </View>
+                            </Pressable>
+                        ))}
+                    </ScrollView>
 
-            {/* Menu Items */}
-            <ScrollView
-                style={styles.menuList}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.menuScrollContent}
-            >
-                {filteredMenu.map((item) => (
-                    <View key={item.id} style={styles.menuCard}>
-                        {/* Image */}
-                        <View style={styles.imageWrapper}>
-                            <Image
-                                source={{ uri: item.image }}
-                                style={styles.menuImage}
-                                resizeMode="cover"
+                    {/* Dot Indicators */}
+                    <View style={styles.dots}>
+                        {IMAGES.map((_, i) => (
+                            <View
+                                key={i}
+                                style={[styles.dot, activeIndex === i && styles.activeDot]}
                             />
-                            {item.isBestseller && (
-                                <View style={styles.bestsellerTag}>
-                                    <Ionicons name="star" size={12} color="#fff" />
-                                    <Text style={styles.bestsellerTagText}>BESTSELLER</Text>
-                                </View>
-                            )}
-                            <View style={[styles.vegBadge, { backgroundColor: item.isVeg ? "#10B981" : "#EF4444" }]}>
-                                <View style={[styles.vegDot, { borderColor: item.isVeg ? "#10B981" : "#EF4444" }]}>
-                                    <View style={[styles.vegDotInner, { backgroundColor: item.isVeg ? "#10B981" : "#EF4444" }]} />
-                                </View>
-                            </View>
-                        </View>
-
-                        {/* Content */}
-                        <View style={styles.menuCardContent}>
-                            <View style={styles.menuCardHeader}>
-                                <Text style={styles.menuItemName}>{item.name}</Text>
-                                {renderSpicyIcons(item.spicyLevel)}
-                            </View>
-                            <Text style={styles.menuItemDescription} numberOfLines={2}>
-                                {item.description}
-                            </Text>
-                            <View style={styles.priceTag}>
-                                <Text style={styles.menuItemPrice}>₹{item.price}</Text>
-                            </View>
-                        </View>
-                    </View>
-                ))}
-
-                {/* Footer Info */}
-                <View style={styles.footer}>
-                    <View style={styles.footerItem}>
-                        <View style={styles.vegIndicatorLegend}>
-                            <View style={styles.vegDotLegend} />
-                        </View>
-                        <Text style={styles.footerText}>Vegetarian</Text>
-                    </View>
-                    <View style={styles.footerItem}>
-                        <View style={[styles.vegIndicatorLegend, { borderColor: "#EF4444" }]}>
-                            <View style={[styles.vegDotLegend, { backgroundColor: "#EF4444" }]} />
-                        </View>
-                        <Text style={styles.footerText}>Non-Vegetarian</Text>
+                        ))}
                     </View>
                 </View>
-            </ScrollView>
+            </View>
+
+            {/* Zoomable Image Modal */}
+            <ImageZoomModal
+                visible={!!previewImage}
+                image={previewImage}
+                onClose={() => setPreviewImage(null)}
+            />
         </SafeAreaView>
     );
 }
 
+/* ---------------- FULL SCREEN ZOOM MODAL ---------------- */
+
+function ImageZoomModal({
+    visible,
+    image,
+    onClose,
+}: {
+    visible: boolean;
+    image: ImageSourcePropType | string | null;
+    onClose: () => void;
+}) {
+    const scale = useRef(new Animated.Value(1)).current;
+    const lastScale = useRef(1);
+
+    const onPinchEvent = Animated.event([{ nativeEvent: { scale: scale } }], {
+        useNativeDriver: true,
+    });
+
+    const onPinchStateChange = (event: any) => {
+        if (event.nativeEvent.oldState === 4) {
+            const newScale = lastScale.current * event.nativeEvent.scale;
+            lastScale.current = Math.max(1, Math.min(newScale, 4));
+            Animated.spring(scale, {
+                toValue: 1,
+                useNativeDriver: true,
+            }).start();
+        }
+    };
+
+    const handleClose = () => {
+        lastScale.current = 1;
+        scale.setValue(1);
+        onClose();
+    };
+
+    // ✅ Get normalized image source
+    const imageSource = image ? getImageSource(image) : null;
+
+    return (
+        <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
+            <View style={styles.modalContainer}>
+                {/* Close Button */}
+                <Pressable style={styles.closeButton} onPress={handleClose}>
+                    <View style={styles.closeButtonInner}>
+                        <Text style={styles.closeButtonText}>✕</Text>
+                    </View>
+                </Pressable>
+
+                {/* Zoomable Image */}
+                <View style={styles.imageContainer}>
+                    <PinchGestureHandler
+                        onGestureEvent={onPinchEvent}
+                        onHandlerStateChange={onPinchStateChange}
+                    >
+                        <Animated.View style={styles.animatedContainer}>
+                            {imageSource && (
+                                <Animated.Image
+                                    source={imageSource} // ✅ Use normalized source
+                                    style={[
+                                        styles.modalImage,
+                                        {
+                                            transform: [
+                                                { scale: Animated.multiply(scale, lastScale.current) },
+                                            ],
+                                        },
+                                    ]}
+                                    resizeMode="contain"
+                                />
+                            )}
+                        </Animated.View>
+                    </PinchGestureHandler>
+                </View>
+
+                {/* Hint Text */}
+                <View style={styles.hintContainer}>
+                    <Text style={styles.hintText}>Pinch to zoom • Tap X to close</Text>
+                </View>
+            </View>
+        </Modal>
+    );
+}
+
+/* ---------------- STYLES ---------------- */
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FAFAFA",
+        backgroundColor: Colors.background,
     },
-
-    // Header
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        backgroundColor: "#fff",
-        borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
-    },
-    headerContent: {
+    content: {
         flex: 1,
+        paddingHorizontal: 16,
     },
-    headerTitle: {
-        fontSize: 28,
-        fontWeight: "700",
-        color: Colors.secondary,
-    },
-    headerSubtitle: {
-        fontSize: 14,
-        color: Colors.muted,
-        marginTop: 4,
-    },
-    menuIcon: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        backgroundColor: Colors.primarySoft,
+    titleSection: {
+        paddingVertical: 20,
         alignItems: "center",
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: "bold",
+        color: Colors.primary,
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 14,
+        color: "#64748b",
+        fontWeight: "500",
+    },
+    sliderContainer: {
+        flex: 1,
         justifyContent: "center",
     },
-    menuEmoji: {
-        fontSize: 28,
-    },
-
-    // Categories
-    categoriesWrapper: {
-        backgroundColor: "#fff",
-        borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
-    },
-    categoriesContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        flexDirection: "row",
-    },
-    categoryTab: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 20,
-        backgroundColor: "#F3F4F6",
-        marginRight: 10,
-    },
-    categoryTabActive: {
-        backgroundColor: Colors.primary,
-    },
-    categoryText: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: Colors.muted,
-    },
-    categoryTextActive: {
-        color: "#fff",
-    },
-
-    // Menu List
-    menuList: {
-        flex: 1,
-    },
-    menuScrollContent: {
-        padding: 16,
-        paddingBottom: 32,
-    },
-
-    // Menu Card
-    menuCard: {
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        marginBottom: 16,
-        overflow: "hidden",
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 3,
+    scrollView: {
+        flexGrow: 0,
     },
     imageWrapper: {
-        width: "100%",
-        height: 200,
-        position: "relative",
+        width: width,
     },
-    menuImage: {
+    imageCard: {
+        width: width - 32,
+        height: (width - 32) * 1.4,
+        borderRadius: 16,
+    },
+    image: {
         width: "100%",
         height: "100%",
     },
-    bestsellerTag: {
-        position: "absolute",
-        top: 12,
-        left: 12,
+    dots: {
         flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "rgba(245, 158, 11, 0.95)",
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 8,
-        gap: 4,
-    },
-    bestsellerTagText: {
-        fontSize: 10,
-        fontWeight: "700",
-        color: "#fff",
-        letterSpacing: 0.5,
-    },
-    vegBadge: {
-        position: "absolute",
-        top: 12,
-        right: 12,
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-        alignItems: "center",
         justifyContent: "center",
+        marginTop: 20,
+        marginBottom: 20,
     },
-    vegDot: {
-        width: 20,
-        height: 20,
+    dot: {
+        width: 8,
+        height: 8,
         borderRadius: 4,
-        borderWidth: 2.5,
-        backgroundColor: "#fff",
-        alignItems: "center",
-        justifyContent: "center",
+        backgroundColor: "#cbd5e1",
+        marginHorizontal: 4,
     },
-    vegDotInner: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
+    activeDot: {
+        backgroundColor: Colors.primary,
+        width: 24,
     },
-
-    // Card Content
-    menuCardContent: {
-        padding: 16,
-    },
-    menuCardHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 8,
-    },
-    menuItemName: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: Colors.secondary,
+    modalContainer: {
         flex: 1,
-    },
-    spicyContainer: {
-        flexDirection: "row",
-        gap: 2,
-    },
-    spicyIcon: {
-        fontSize: 14,
-    },
-    menuItemDescription: {
-        fontSize: 14,
-        color: Colors.muted,
-        lineHeight: 20,
-        marginBottom: 12,
-    },
-    priceTag: {
-        alignSelf: "flex-start",
-        backgroundColor: Colors.primarySoft,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
-    },
-    menuItemPrice: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: Colors.primary,
-    },
-
-    // Footer
-    footer: {
-        flexDirection: "row",
+        backgroundColor: "rgba(0,0,0,0.97)",
         justifyContent: "center",
         alignItems: "center",
-        gap: 24,
-        paddingVertical: 24,
-        paddingHorizontal: 16,
-        marginTop: 8,
     },
-    footerItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
+    closeButton: {
+        position: "absolute",
+        top: 50,
+        right: 20,
+        zIndex: 10,
     },
-    vegIndicatorLegend: {
-        width: 20,
-        height: 20,
-        borderWidth: 2,
-        borderColor: "#10B981",
-        borderRadius: 4,
-        alignItems: "center",
+    closeButtonInner: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: "rgba(255,255,255,0.2)",
         justifyContent: "center",
-        backgroundColor: "#fff",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.3)",
     },
-    vegDotLegend: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: "#10B981",
+    closeButtonText: {
+        color: "#fff",
+        fontSize: 24,
+        fontWeight: "600",
     },
-    footerText: {
+    imageContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        width: width,
+    },
+    animatedContainer: {
+        width: width,
+        height: height,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    modalImage: {
+        width: width * 0.95,
+        height: height * 0.8,
+    },
+    hintContainer: {
+        position: "absolute",
+        bottom: 40,
+        alignSelf: "center",
+        backgroundColor: "rgba(255,255,255,0.15)",
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 20,
+    },
+    hintText: {
+        color: "#fff",
         fontSize: 13,
-        color: Colors.muted,
         fontWeight: "500",
     },
 });

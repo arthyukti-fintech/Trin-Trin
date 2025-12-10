@@ -14,8 +14,8 @@ export default function RestaurantScreen() {
     setCart(prev =>
       prev.find(i => i.id === item.id)
         ? prev.map(i =>
-            i.id === item.id ? { ...i, qty: i.qty + 1 } : i
-          )
+          i.id === item.id ? { ...i, qty: i.qty + 1 } : i
+        )
         : [...prev, { ...item, qty: 1 }]
     );
   };
@@ -38,12 +38,12 @@ export default function RestaurantScreen() {
             item={item}
             quantity={getQty(item.id)}
             onAdd={() => addToCart(item)}
-            onRemove={() => {}}
+            onRemove={() => { }}
           />
         ))}
       </ScrollView>
 
-      <FloatingCart count={cartCount} onPress={() => {}} />
+      <FloatingCart count={cartCount} onPress={() => { }} />
     </SafeAreaView>
   );
 }

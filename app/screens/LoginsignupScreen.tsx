@@ -54,8 +54,6 @@ export default function LoginsignupScreen() {
                     <Text style={styles.signupText}>Sign Up</Text>
                 </TouchableOpacity>
             </View>
-
-
         </View>
     );
 }
