@@ -1,227 +1,127 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 import { Colors } from "../theme";
+
+const { width, height } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FAFAFA",
+        backgroundColor: Colors.background,
     },
-
-    // Header
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        backgroundColor: "#fff",
-        borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
-    },
-    headerContent: {
+    content: {
         flex: 1,
+        paddingHorizontal: 0, // ✅ Changed from 16 to 0
     },
-    headerTitle: {
-        fontSize: 28,
-        fontWeight: "700",
-        color: Colors.secondary,
-    },
-    headerSubtitle: {
-        fontSize: 14,
-        color: Colors.muted,
-        marginTop: 4,
-    },
-    menuIcon: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        backgroundColor: Colors.primarySoft,
+    titleSection: {
+        paddingVertical: 20,
         alignItems: "center",
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: "bold",
+        color: Colors.primary,
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 14,
+        color: "#64748b",
+        fontWeight: "500",
+    },
+    sliderContainer: {
+        flex: 1,
         justifyContent: "center",
     },
-    menuEmoji: {
-        fontSize: 28,
-    },
-
-    // Categories
-    categoriesWrapper: {
-        backgroundColor: "#fff",
-        borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
-    },
-    categoriesContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        flexDirection: "row",
-    },
-    categoryTab: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 20,
-        backgroundColor: "#F3F4F6",
-        marginRight: 10,
-    },
-    categoryTabActive: {
-        backgroundColor: Colors.primary,
-    },
-    categoryText: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: Colors.muted,
-    },
-    categoryTextActive: {
-        color: "#fff",
-    },
-
-    // Menu List
-    menuList: {
-        flex: 1,
-    },
-    menuScrollContent: {
-        padding: 16,
-        paddingBottom: 32,
-    },
-
-    // Menu Card
-    menuCard: {
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        marginBottom: 16,
-        overflow: "hidden",
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 3,
+    scrollView: {
+        flexGrow: 0,
     },
     imageWrapper: {
-        width: "100%",
-        height: 200,
-        position: "relative",
+        width: width, // ✅ Full screen width for proper pagination
+        justifyContent: "center", // ✅ Center the card
+        alignItems: "center", // ✅ Center the card
     },
-    menuImage: {
+    imageCard: {
+        width: width - 32, // ✅ Card width with padding
+        height: (width - 32) * 1.4,
+        borderRadius: 16,
+        overflow: "hidden", // ✅ Ensures rounded corners work with image
+        backgroundColor: "#f1f5f9", // ✅ Subtle background while loading
+    },
+    image: {
         width: "100%",
         height: "100%",
     },
-    bestsellerTag: {
-        position: "absolute",
-        top: 12,
-        left: 12,
+    dots: {
         flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "rgba(245, 158, 11, 0.95)",
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 8,
-        gap: 4,
-    },
-    bestsellerTagText: {
-        fontSize: 10,
-        fontWeight: "700",
-        color: "#fff",
-        letterSpacing: 0.5,
-    },
-    vegBadge: {
-        position: "absolute",
-        top: 12,
-        right: 12,
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-        alignItems: "center",
         justifyContent: "center",
+        marginTop: 20,
+        marginBottom: 20,
     },
-    vegDot: {
-        width: 20,
-        height: 20,
+    dot: {
+        width: 8,
+        height: 8,
         borderRadius: 4,
-        borderWidth: 2.5,
-        backgroundColor: "#fff",
-        alignItems: "center",
-        justifyContent: "center",
+        backgroundColor: "#cbd5e1",
+        marginHorizontal: 4,
     },
-    vegDotInner: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
+    activeDot: {
+        backgroundColor: Colors.primary,
+        width: 24,
     },
-
-    // Card Content
-    menuCardContent: {
-        padding: 16,
-    },
-    menuCardHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 8,
-    },
-    menuItemName: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: Colors.secondary,
+    modalContainer: {
         flex: 1,
-    },
-    spicyContainer: {
-        flexDirection: "row",
-        gap: 2,
-    },
-    spicyIcon: {
-        fontSize: 14,
-    },
-    menuItemDescription: {
-        fontSize: 14,
-        color: Colors.muted,
-        lineHeight: 20,
-        marginBottom: 12,
-    },
-    priceTag: {
-        alignSelf: "flex-start",
-        backgroundColor: Colors.primarySoft,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
-    },
-    menuItemPrice: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: Colors.primary,
-    },
-
-    // Footer
-    footer: {
-        flexDirection: "row",
+        backgroundColor: "rgba(0,0,0,0.97)",
         justifyContent: "center",
         alignItems: "center",
-        gap: 24,
-        paddingVertical: 24,
-        paddingHorizontal: 16,
-        marginTop: 8,
     },
-    footerItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
+    closeButton: {
+        position: "absolute",
+        top: 50,
+        right: 20,
+        zIndex: 10,
     },
-    vegIndicatorLegend: {
-        width: 20,
-        height: 20,
-        borderWidth: 2,
-        borderColor: "#10B981",
-        borderRadius: 4,
-        alignItems: "center",
+    closeButtonInner: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: "rgba(255,255,255,0.2)",
         justifyContent: "center",
-        backgroundColor: "#fff",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.3)",
     },
-    vegDotLegend: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: "#10B981",
+    closeButtonText: {
+        color: "#fff",
+        fontSize: 24,
+        fontWeight: "600",
     },
-    footerText: {
+    imageContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        width: width,
+    },
+    animatedContainer: {
+        width: width,
+        height: height,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    modalImage: {
+        width: width * 0.95,
+        height: height * 0.8,
+    },
+    hintContainer: {
+        position: "absolute",
+        bottom: 40,
+        alignSelf: "center",
+        backgroundColor: "rgba(255,255,255,0.15)",
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 20,
+    },
+    hintText: {
+        color: "#fff",
         fontSize: 13,
-        color: Colors.muted,
         fontWeight: "500",
     },
 });
