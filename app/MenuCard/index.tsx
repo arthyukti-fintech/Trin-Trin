@@ -12,9 +12,10 @@ import {
     ImageSourcePropType,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PinchGestureHandler } from "react-native-gesture-handler";
+import { PinchGestureHandler, State } from "react-native-gesture-handler";
 import { Colors } from "../theme";
 import BackHeader from "@/components/BackHeader";
+import { styles } from "./menuCardStyle";
 
 const { width, height } = Dimensions.get("window");
 
@@ -72,7 +73,7 @@ export default function MenuScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <BackHeader title="Restaurant Details" backTo={'/RestaurantList'} />
+            <BackHeader title="Restaurant Details" backTo={'/RestaurantList'} iconColor="black" />
 
             <View style={styles.content}>
                 {/* Slider Container */}
@@ -84,6 +85,8 @@ export default function MenuScreen() {
                         showsHorizontalScrollIndicator={false}
                         onMomentumScrollEnd={onScrollEnd}
                         style={styles.scrollView}
+                        snapToInterval={width} // ✅ Ensures proper snapping
+                        decelerationRate="fast" // ✅ Smoother manual scrolling
                     >
                         {IMAGES.map((img) => (
                             <Pressable
@@ -91,11 +94,12 @@ export default function MenuScreen() {
                                 onPress={() => setPreviewImage(img.source)}
                                 style={styles.imageWrapper}
                             >
+                                {/* ✅ Centered card within full-width wrapper */}
                                 <View style={styles.imageCard}>
                                     <Image
-                                        source={getImageSource(img.source)} // ✅ Use helper
+                                        source={getImageSource(img.source)}
                                         style={styles.image}
-                                        resizeMode="contain"
+                                        resizeMode="cover"
                                     />
                                 </View>
                             </Pressable>
@@ -124,8 +128,6 @@ export default function MenuScreen() {
     );
 }
 
-/* ---------------- FULL SCREEN ZOOM MODAL ---------------- */
-
 function ImageZoomModal({
     visible,
     image,
@@ -136,28 +138,42 @@ function ImageZoomModal({
     onClose: () => void;
 }) {
     const scale = useRef(new Animated.Value(1)).current;
+    const baseScale = useRef(new Animated.Value(1)).current;
+    const pinchScale = useRef(new Animated.Value(1)).current;
     const lastScale = useRef(1);
 
-    const onPinchEvent = Animated.event([{ nativeEvent: { scale: scale } }], {
-        useNativeDriver: true,
-    });
+    const onPinchEvent = Animated.event(
+        [{ nativeEvent: { scale: pinchScale } }],
+        { useNativeDriver: true }
+    );
 
     const onPinchStateChange = (event: any) => {
-        if (event.nativeEvent.oldState === 4) {
-            const newScale = lastScale.current * event.nativeEvent.scale;
-            lastScale.current = Math.max(1, Math.min(newScale, 4));
-            Animated.spring(scale, {
-                toValue: 1,
-                useNativeDriver: true,
-            }).start();
+        // ✅ When pinch gesture ends
+        if (event.nativeEvent.oldState === State.ACTIVE) {
+            // Calculate new scale
+            lastScale.current = lastScale.current * event.nativeEvent.scale;
+
+            // Clamp between 1x and 4x
+            lastScale.current = Math.max(1, Math.min(lastScale.current, 4));
+
+            // Update base scale
+            baseScale.setValue(lastScale.current);
+
+            // Reset pinch scale to 1
+            pinchScale.setValue(1);
         }
     };
 
     const handleClose = () => {
+        // ✅ Reset all scales
         lastScale.current = 1;
-        scale.setValue(1);
+        baseScale.setValue(1);
+        pinchScale.setValue(1);
         onClose();
     };
+
+    // ✅ Combined scale = baseScale * pinchScale
+    const animatedScale = Animated.multiply(baseScale, pinchScale);
 
     // ✅ Get normalized image source
     const imageSource = image ? getImageSource(image) : null;
@@ -181,13 +197,11 @@ function ImageZoomModal({
                         <Animated.View style={styles.animatedContainer}>
                             {imageSource && (
                                 <Animated.Image
-                                    source={imageSource} // ✅ Use normalized source
+                                    source={imageSource}
                                     style={[
                                         styles.modalImage,
                                         {
-                                            transform: [
-                                                { scale: Animated.multiply(scale, lastScale.current) },
-                                            ],
+                                            transform: [{ scale: animatedScale }],
                                         },
                                     ]}
                                     resizeMode="contain"
@@ -205,124 +219,3 @@ function ImageZoomModal({
         </Modal>
     );
 }
-
-/* ---------------- STYLES ---------------- */
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: Colors.background,
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: 16,
-    },
-    titleSection: {
-        paddingVertical: 20,
-        alignItems: "center",
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: "bold",
-        color: Colors.primary,
-        marginBottom: 8,
-    },
-    subtitle: {
-        fontSize: 14,
-        color: "#64748b",
-        fontWeight: "500",
-    },
-    sliderContainer: {
-        flex: 1,
-        justifyContent: "center",
-    },
-    scrollView: {
-        flexGrow: 0,
-    },
-    imageWrapper: {
-        width: width,
-    },
-    imageCard: {
-        width: width - 32,
-        height: (width - 32) * 1.4,
-        borderRadius: 16,
-    },
-    image: {
-        width: "100%",
-        height: "100%",
-    },
-    dots: {
-        flexDirection: "row",
-        justifyContent: "center",
-        marginTop: 20,
-        marginBottom: 20,
-    },
-    dot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: "#cbd5e1",
-        marginHorizontal: 4,
-    },
-    activeDot: {
-        backgroundColor: Colors.primary,
-        width: 24,
-    },
-    modalContainer: {
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.97)",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    closeButton: {
-        position: "absolute",
-        top: 50,
-        right: 20,
-        zIndex: 10,
-    },
-    closeButtonInner: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: "rgba(255,255,255,0.2)",
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.3)",
-    },
-    closeButtonText: {
-        color: "#fff",
-        fontSize: 24,
-        fontWeight: "600",
-    },
-    imageContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        width: width,
-    },
-    animatedContainer: {
-        width: width,
-        height: height,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    modalImage: {
-        width: width * 0.95,
-        height: height * 0.8,
-    },
-    hintContainer: {
-        position: "absolute",
-        bottom: 40,
-        alignSelf: "center",
-        backgroundColor: "rgba(255,255,255,0.15)",
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 20,
-    },
-    hintText: {
-        color: "#fff",
-        fontSize: 13,
-        fontWeight: "500",
-    },
-});
