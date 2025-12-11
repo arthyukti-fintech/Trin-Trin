@@ -9,10 +9,12 @@ type BackHeaderProps = {
     backTo?: Href;
     replace?: boolean;
 
-    /** NEW: Custom styling overrides */
     containerStyle?: ViewStyle;
     titleStyle?: TextStyle;
     iconStyle?: ViewStyle;
+
+    /** NEW: customizable arrow color */
+    iconColor?: string;
 };
 
 export default function BackHeader({
@@ -22,6 +24,7 @@ export default function BackHeader({
     containerStyle,
     titleStyle,
     iconStyle,
+    iconColor,
 }: BackHeaderProps) {
     const router = useRouter();
 
@@ -37,7 +40,11 @@ export default function BackHeader({
         <SafeAreaView edges={["top"]} style={styles.safe}>
             <View style={[styles.container, containerStyle]}>
                 <Pressable onPress={handleBack} style={[styles.iconWrap, iconStyle]}>
-                    <Ionicons name="arrow-back" size={24} color={Colors.border} />
+                    <Ionicons
+                        name="arrow-back"
+                        size={24}
+                        color={iconColor || Colors.border}
+                    />
                 </Pressable>
 
                 {title && (
@@ -51,9 +58,7 @@ export default function BackHeader({
 }
 
 const styles = StyleSheet.create({
-    safe: {
-        // backgroundColor: Colors.background,
-    },
+    safe: {},
     container: {
         flexDirection: "row",
         alignItems: "center",

@@ -4,6 +4,7 @@ import { Colors } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
 import BackHeader from "@/components/BackHeader";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -12,6 +13,14 @@ export default function ProfileScreen() {
   const userEmail = "arman@example.com";
   const rewardPoints = 1250;
   const memberSince = "Member since Dec 2023";
+  type IconName = React.ComponentProps<typeof Ionicons>["name"];
+
+  const actions: { icon: IconName; label: string; color: string; count: string }[] = [
+    { icon: "calendar-outline", label: "Bookings", count: "3", color: "#E23744" },
+    { icon: "gift-outline", label: "Offers", count: "12", color: "#FF6B35" },
+    { icon: "star", label: "Reviews", count: "8", color: "#FFB800" },
+    { icon: "ticket-outline", label: "Vouchers", count: "5", color: "#00AC4F" },
+  ];
 
   const activeOrder = {
     id: "ORD_12345",
@@ -37,7 +46,7 @@ export default function ProfileScreen() {
   }[] = [
       {
         icon: "person-outline",
-        label: "Manage Account",
+        label: "Edit Profile",
         subtitle: "Profile, security & preferences",
         color: "#E23744"
       },
@@ -158,7 +167,7 @@ export default function ProfileScreen() {
         {/* Quick Actions */}
         <View style={styles.quickActionsSection}>
           <View style={styles.quickActionsGrid}>
-            {quickActions.map((action, i) => (
+            {actions.map((action, i) => (
               <Pressable key={i} style={styles.quickActionCard}>
                 <View style={[styles.quickActionIcon, { backgroundColor: action.color + '15' }]}>
                   <Ionicons name={action.icon} size={24} color={action.color} />
@@ -173,7 +182,11 @@ export default function ProfileScreen() {
         {/* Menu Items */}
         <View style={styles.profileMenu}>
           {profileMenuItems.map((item, i) => (
-            <Pressable key={i} style={styles.menuItem}>
+            <Pressable key={i} style={styles.menuItem} onPress={() => {
+              if (item.label === "Edit Profile") {
+                router.push("/EditProfile");
+              }
+            }}>
               <View style={[styles.menuIcon, { backgroundColor: item.color + '15' }]}>
                 <Ionicons name={item.icon} size={22} color={item.color} />
               </View>
@@ -205,8 +218,8 @@ export default function ProfileScreen() {
         <View style={styles.footer}>
           <Text style={styles.versionText}>App Version 2.1.0</Text>
         </View>
-      </ScrollView>
-    </View>
+      </ScrollView >
+    </View >
   );
 }
 
