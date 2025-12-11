@@ -13,15 +13,29 @@ export default function ProfileScreen() {
   const userEmail = "arman@example.com";
   const rewardPoints = 1250;
   const memberSince = "Member since Dec 2023";
-type IconName = React.ComponentProps<typeof Ionicons>["name"];
+  type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
-const actions: { icon: IconName; label: string; color: string; count: string }[] = [
-  { icon: "calendar-outline", label: "Bookings", count: "3", color: "#E23744" },
-  { icon: "gift-outline", label: "Offers", count: "12", color: "#FF6B35" },
-  { icon: "star", label: "Reviews", count: "8", color: "#FFB800" },
-  { icon: "ticket-outline", label: "Vouchers", count: "5", color: "#00AC4F" },
-];
+  const actions: { icon: IconName; label: string; color: string; count: string }[] = [
+    { icon: "calendar-outline", label: "Bookings", count: "3", color: "#E23744" },
+    { icon: "gift-outline", label: "Offers", count: "12", color: "#FF6B35" },
+    { icon: "star", label: "Reviews", count: "8", color: "#FFB800" },
+    { icon: "ticket-outline", label: "Vouchers", count: "5", color: "#00AC4F" },
+  ];
 
+  const activeOrder = {
+    id: "ORD_12345",
+    restaurantName: "Pizza Palace",
+    amount: 549,
+    status: "CONFIRMED", // CONFIRMED | PAID | CANCELLED
+    paymentMethod: "UPI / Card",
+  };
+
+  const quickActions = [
+    { icon: "calendar-outline", label: "Bookings", count: "3", color: "#E23744" },
+    { icon: "gift-outline", label: "Offers", count: "12", color: "#FF6B35" },
+    { icon: "star", label: "Reviews", count: "8", color: "#FFB800" },
+    { icon: "ticket-outline", label: "Vouchers", count: "5", color: "#00AC4F" },
+  ];
 
   const profileMenuItems: {
     icon: IconName;
@@ -115,26 +129,40 @@ const actions: { icon: IconName; label: string; color: string; count: string }[]
         </LinearGradient>
 
         {/* Rewards Card */}
-        <View style={styles.rewardsSection}>
-          <LinearGradient
-            colors={['#FFB800', '#FFA000']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.rewardsCard}
-          >
-            <View style={styles.rewardsLeft}>
-              <Ionicons name="trophy" size={32} color="#fff" />
-              <View style={styles.rewardsInfo}>
-                <Text style={styles.rewardsLabel}>Reward Points</Text>
-                <Text style={styles.rewardsValue}>{rewardPoints.toLocaleString()}</Text>
+        {/* ✅ Payment Section – shown only when order is confirmed */}
+        {activeOrder?.status === "CONFIRMED" && (
+          <View style={styles.paymentSection}>
+            <LinearGradient
+              colors={["#0f172a", "#020617"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.paymentCard}
+            >
+              {/* Left Info */}
+              <View style={styles.paymentLeft}>
+                <View style={styles.paymentIconWrap}>
+                  <Ionicons name="wallet-outline" size={26} color="#22c55e" />
+                </View>
+
+                <View style={styles.paymentInfo}>
+                  <Text style={styles.paymentTitle}>Payment Pending</Text>
+                  <Text style={styles.paymentSubtitle}>
+                    {activeOrder.restaurantName}
+                  </Text>
+                  <Text style={styles.paymentAmount}>
+                    ₹{activeOrder.amount}
+                  </Text>
+                </View>
               </View>
-            </View>
-            <Pressable style={styles.redeemButton}>
-              <Text style={styles.redeemButtonText}>Redeem</Text>
-              <Ionicons name="arrow-forward" size={16} color="#FFB800" />
-            </Pressable>
-          </LinearGradient>
-        </View>
+
+              {/* CTA */}
+              <Pressable style={styles.payNowButton}>
+                <Text style={styles.payNowText}>Pay Now</Text>
+                <Ionicons name="arrow-forward" size={16} color="#0f172a" />
+              </Pressable>
+            </LinearGradient>
+          </View>
+        )}
 
         {/* Quick Actions */}
         <View style={styles.quickActionsSection}>
@@ -157,7 +185,11 @@ const actions: { icon: IconName; label: string; color: string; count: string }[]
             <Pressable key={i} style={styles.menuItem} onPress={() => {
               if (item.label === "Edit Profile") {
                 router.push("/EditProfile");
-              }}}>
+              }
+              if (item.label === "My Orders") {
+                router.push("/MyOrders");
+              }
+            }}>
               <View style={[styles.menuIcon, { backgroundColor: item.color + '15' }]}>
                 <Ionicons name={item.icon} size={22} color={item.color} />
               </View>
@@ -178,17 +210,17 @@ const actions: { icon: IconName; label: string; color: string; count: string }[]
             </Pressable>
           ))}
 
-        {/* Logout Button */}
-        <Pressable style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={22} color="#E23744" />
-          <Text style={styles.logoutText}>Logout</Text>
-        </Pressable>
-    </View>
+          {/* Logout Button */}
+          <Pressable style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={22} color="#E23744" />
+            <Text style={styles.logoutText}>Logout</Text>
+          </Pressable>
+        </View>
 
-        {/* App Version */ }
-  <View style={styles.footer}>
-    <Text style={styles.versionText}>App Version 2.1.0</Text>
-  </View>
+        {/* App Version */}
+        <View style={styles.footer}>
+          <Text style={styles.versionText}>App Version 2.1.0</Text>
+        </View>
       </ScrollView >
     </View >
   );
@@ -471,4 +503,78 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.muted,
   },
+  paymentSection: {
+    paddingHorizontal: 20,
+    marginTop: -30,
+    marginBottom: 24,
+  },
+
+  paymentCard: {
+    borderRadius: 18,
+    padding: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+
+  paymentLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  paymentIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "rgba(34,197,94,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14,
+  },
+
+  paymentInfo: {
+    flex: 1,
+  },
+
+  paymentTitle: {
+    fontSize: 13,
+    color: "#e5e7eb",
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+
+  paymentSubtitle: {
+    fontSize: 14,
+    color: "#94a3b8",
+    marginBottom: 6,
+  },
+
+  paymentAmount: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#22c55e",
+  },
+
+  payNowButton: {
+    backgroundColor: "#22c55e",
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 22,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  payNowText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+
 });
