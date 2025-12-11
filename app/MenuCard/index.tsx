@@ -212,9 +212,9 @@ function ImageZoomModal({
                 </View>
 
                 {/* Hint Text */}
-                <View style={styles.hintContainer}>
+                {/* <View style={styles.hintContainer}>
                     <Text style={styles.hintText}>Pinch to zoom • Tap X to close</Text>
-                </View>
+                </View> */}
             </View>
         </Modal>
     );
