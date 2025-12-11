@@ -109,7 +109,7 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.gradientHeader}
         >
-          <BackHeader title="Profile" titleStyle={{ color: "#fff" }} />
+          <BackHeader title="Profile" backTo="/RestaurantList" titleStyle={{ color: "#fff" }} />
           <View style={styles.profileHeader}>
             <View style={styles.avatarContainer}>
               <View style={styles.largeAvatar}>
@@ -185,6 +185,12 @@ export default function ProfileScreen() {
             <Pressable key={i} style={styles.menuItem} onPress={() => {
               if (item.label === "Edit Profile") {
                 router.push("/EditProfile");
+              }
+              if (item.label === "My Orders") {
+                router.push("/MyOrders");
+              }
+              if(item.label==='Favorite Restaurants'){
+                router.push('/MyOrderStatus')
               }
             }}>
               <View style={[styles.menuIcon, { backgroundColor: item.color + '15' }]}>
