@@ -10,7 +10,10 @@ import { useGetAllRestaurantsQuery } from "@/redux/services/resturantApi";
 
 export default function Home() {
     const { data, isLoading, error, refetch } = useGetAllRestaurantsQuery();
-    console.log(data)
+    console.log("loading:", isLoading);
+console.log("data:", data);
+console.log("error:", error);
+
     const router = useRouter();
 
     return (
