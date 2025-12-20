@@ -1,14 +1,16 @@
 import { View, FlatList, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { Colors, Spacing, Typography } from "../theme";
-
 import { ScrollView } from "react-native-gesture-handler";
 import CompactFoodHeader from "@/components/HomeHeader/HomeHeader";
 import FoodHeading from "@/components/FoodHeading";
 import RestaurantCard from "@/components/RestaurantCard";
 import { restaurants } from "../data/restaurants";
+import { useGetAllRestaurantsQuery } from "@/redux/services/resturantApi";
 
 export default function Home() {
+    const { data, isLoading, error, refetch } = useGetAllRestaurantsQuery();
+    console.log(data)
     const router = useRouter();
 
     return (
@@ -20,7 +22,7 @@ export default function Home() {
                     title="What are you craving today?"
                     highlightWord="craving"
                     subtitle="Freshly cooked food from nearby kitchens"
-                    emoji="🤤"
+                // emoji="🤤"
                 />
 
                 <ScrollView

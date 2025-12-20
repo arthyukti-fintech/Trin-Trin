@@ -22,33 +22,55 @@ import Animated, {
 import { useAuth } from "../context/AuthContext";
 import { Colors } from "../theme";
 import { styles } from "./loginStyle";
-
+import { useLoginMutation } from "@/redux/services/authApi";
+import Toast from "react-native-toast-message";
+import { getApiErrorMessage } from "@/utils/helper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login() {
     const router = useRouter();
     const [phoneNumber, setPhoneNumber] = useState("");
-    const [error, setError] = useState("");
-    const { login } = useAuth();
+    // const [error, setError] = useState("");
+    const [login, { isLoading, error }] = useLoginMutation();
 
     // Animation value for button press
     const buttonScale = useSharedValue(1);
 
     // --- LOGIC REMAINS EXACTLY THE SAME ---
-    const handleSendOTP = async () => {
-        // Button bounce animation
-        buttonScale.value = withSpring(0.95, {}, () => {
-            buttonScale.value = withSpring(1);
-        });
+    const handleLogin = async () => {
+        if (phoneNumber.length !== 10) return;
 
-        if (phoneNumber.length !== 10) {
-            setError("Please enter a valid 10-digit mobile number");
-            return;
-        }
+        const formattedPhone = `+91${phoneNumber}`;
+
         try {
-            await login(phoneNumber);
-            router.push("/otp");
+            const res = await login({ phoneNumber: formattedPhone }).unwrap();
+
+            const accessToken = res?.data?.accessToken;
+            console.log(accessToken)
+
+            if (accessToken) {
+                // ✅ Store token
+                await AsyncStorage.setItem("accessToken", accessToken);
+            }
+
+            Toast.show({
+                type: "success",
+                text1: "OTP Sent",
+                text2: "OTP sent successfully",
+            });
+
+            router.push("/RestaurantList");
+
         } catch (err) {
-            console.log(err);
+            const errorMessage = getApiErrorMessage(err);
+
+            Toast.show({
+                type: "error",
+                text1: "Failed to Send OTP",
+                text2: errorMessage,
+            });
+
+            console.log("Login Error:", err);
         }
     };
 
@@ -57,7 +79,7 @@ export default function Login() {
     const handlePhoneChange = (text: string) => {
         const cleaned = text.replace(/\D/g, "").slice(0, 10);
         setPhoneNumber(cleaned);
-        setError("");
+        // setError("");
     };
 
     const animatedButtonStyle = useAnimatedStyle(() => {
@@ -129,11 +151,11 @@ export default function Login() {
                                 />
                             </View>
 
-                            {error ? (
+                            {/* {error ? (
                                 <Animated.Text entering={FadeInUp} style={styles.errorText}>
                                     {error}
                                 </Animated.Text>
-                            ) : null}
+                            ) : null}  */}
                         </View>
 
                         <View style={styles.bottomSection}>
@@ -145,7 +167,7 @@ export default function Login() {
                                         styles.button,
                                         phoneNumber.length === 10 ? styles.buttonActive : styles.buttonInactive
                                     ]}
-                                    onPress={handleSendOTP}
+                                    onPress={handleLogin}
                                 >
                                     <Text style={styles.buttonText}>Get OTP</Text>
                                 </TouchableOpacity>

@@ -5,10 +5,17 @@ import { Ionicons } from "@expo/vector-icons";
 import BackHeader from "@/components/BackHeader";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { useGetMyProfileQuery } from "@/redux/services/profileApi";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
 export default function ProfileScreen() {
+  const { data, isLoading, error, refetch, isFetching } = useGetMyProfileQuery();
+
+  console.log(data,
+    isLoading,
+    isFetching,
+    error, "this is profile data")
   const userName = "Arman";
   const userEmail = "arman@example.com";
   const rewardPoints = 1250;
@@ -123,7 +130,7 @@ export default function ProfileScreen() {
             </View>
 
             <Text style={styles.profileName}>{userName}</Text>
-            <Text style={styles.profileEmail}>{userEmail}</Text>
+            {/* <Text style={styles.profileEmail}>{userEmail}</Text> */}
             <Text style={styles.memberSince}>{memberSince}</Text>
           </View>
         </LinearGradient>
@@ -189,7 +196,7 @@ export default function ProfileScreen() {
               if (item.label === "My Orders") {
                 router.push("/MyOrders");
               }
-              if(item.label==='Favorite Restaurants'){
+              if (item.label === 'Favorite Restaurants') {
                 router.push('/MyOrderStatus')
               }
             }}>
