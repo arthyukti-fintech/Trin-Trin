@@ -13,8 +13,11 @@ type Props = {
     cuisine: string;
     address: string;
     rating: number;
+    averageDeliveryTime: string; 
     totalRatings: number;
     deliveryTime: string;
+    isVegOnly?:boolean;
+      isActive?: boolean;
     distance: string;
     priceForTwo: number;
     discount?: string;
@@ -81,8 +84,12 @@ export default function RestaurantCard({
     };
 
     const menuCard = () => {
-        router.push("/MenuCard");
-    };
+  router.push({
+    pathname: "/menu/[restaurantId]",
+    params: { restaurantId: id },
+  });
+};
+
 
     const handleScroll = (event: any) => {
         const contentOffsetX = event.nativeEvent.contentOffset.x;

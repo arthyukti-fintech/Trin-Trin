@@ -121,7 +121,7 @@ export default function ProfileScreen() {
             <View style={styles.avatarContainer}>
               <View style={styles.largeAvatar}>
                 <Text style={styles.largeAvatarText}>
-                  {userName.charAt(0).toUpperCase()}
+                  {data?.data?.fullName.charAt(0).toUpperCase()}
                 </Text>
               </View>
               <Pressable style={styles.editAvatarButton}>
@@ -129,7 +129,7 @@ export default function ProfileScreen() {
               </Pressable>
             </View>
 
-            <Text style={styles.profileName}>{userName}</Text>
+            <Text style={styles.profileName}>{data?.data?.fullName}</Text>
             {/* <Text style={styles.profileEmail}>{userEmail}</Text> */}
             <Text style={styles.memberSince}>{memberSince}</Text>
           </View>

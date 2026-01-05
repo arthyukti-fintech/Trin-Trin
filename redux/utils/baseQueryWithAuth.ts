@@ -10,6 +10,7 @@ export const baseQuery = fetchBaseQuery({
 
         // Get token from storage
         const token = await AsyncStorage.getItem("accessToken");
+        console.log(token)
 
         if (token) {
             headers.set("Authorization", `Bearer ${token}`);

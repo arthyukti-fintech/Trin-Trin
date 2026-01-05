@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, Pressable, Image, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors, Spacing } from "../theme";
+import { useLocalSearchParams } from "expo-router";
 
 type MenuItemProps = {
     id: string;
@@ -43,6 +44,7 @@ export default function MenuCard({
     const [localQuantity, setLocalQuantity] = useState(quantity);
 
     const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+
 
     const handleAdd = () => {
         const newQuantity = localQuantity + 1;

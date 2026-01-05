@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     StyleSheet,
     Text,
@@ -11,15 +11,29 @@ import {
 import { Colors } from "../theme/colors";
 import { Ionicons } from "@expo/vector-icons";
 import BackHeader from "@/components/BackHeader";
+import { useGetMyProfileQuery } from "@/redux/services/profileApi";
 
 export default function EditProfile() {
-    const [name, setName] = useState("Arman");
-    const [phone, setPhone] = useState("9876543210");
-    const [email, setEmail] = useState("arman@example.com");
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
     const [dob, setDob] = useState("2000-01-01");
-    const [gender, setGender] = useState("Male");
-
+    const [gender, setGender] = useState("");
+    const { data, isLoading, error, refetch, isFetching } = useGetMyProfileQuery();
     const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
+   console.log(data?.data?.fullName)
+   console.log(data?.data?.phoneNumber)
+   console.log(data?.data?.email)
+   console.log(data?.data?.gender)
+
+   useEffect(() => {
+    if (data?.data) {
+        setName(data.data.fullName || "");
+        setPhone(data.data.phoneNumber || "");
+        setEmail(data.data.email || "");
+        setGender(data.data.gender || "Male");
+    }
+}, [data]);
 
     return (
         <View style={styles.container}>
