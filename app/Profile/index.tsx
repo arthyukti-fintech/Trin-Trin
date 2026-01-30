@@ -121,7 +121,7 @@ export default function ProfileScreen() {
             <View style={styles.avatarContainer}>
               <View style={styles.largeAvatar}>
                 <Text style={styles.largeAvatarText}>
-                  {data?.data?.fullName.charAt(0).toUpperCase()}
+                  {data?.data?.fullName?.charAt(0)?.toUpperCase()}
                 </Text>
               </View>
               <Pressable style={styles.editAvatarButton}>
@@ -137,7 +137,7 @@ export default function ProfileScreen() {
 
         {/* Rewards Card */}
         {/* ✅ Payment Section – shown only when order is confirmed */}
-        {activeOrder?.status === "CONFIRMED" && (
+        {/* {activeOrder?.status === "CONFIRMED" && (
           <View style={styles.paymentSection}>
             <LinearGradient
               colors={["#0f172a", "#020617"]}
@@ -145,7 +145,7 @@ export default function ProfileScreen() {
               end={{ x: 1, y: 1 }}
               style={styles.paymentCard}
             >
-              {/* Left Info */}
+             
               <View style={styles.paymentLeft}>
                 <View style={styles.paymentIconWrap}>
                   <Ionicons name="wallet-outline" size={26} color="#22c55e" />
@@ -162,14 +162,14 @@ export default function ProfileScreen() {
                 </View>
               </View>
 
-              {/* CTA */}
+             
               <Pressable style={styles.payNowButton}>
                 <Text style={styles.payNowText}>Pay Now</Text>
                 <Ionicons name="arrow-forward" size={16} color="#0f172a" />
               </Pressable>
             </LinearGradient>
           </View>
-        )}
+        )} */}
 
         {/* Quick Actions */}
         <View style={styles.quickActionsSection}>
@@ -374,6 +374,7 @@ const styles = StyleSheet.create({
   quickActionsSection: {
     paddingHorizontal: 20,
     marginBottom: 20,
+    marginTop: 20
   },
 
   quickActionsGrid: {

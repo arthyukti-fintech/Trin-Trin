@@ -1,19 +1,79 @@
 import { View, StyleSheet, Text, ActivityIndicator } from "react-native";
+import { useState, useMemo } from "react";
 import { useRouter } from "expo-router";
 import { Colors, Spacing } from "../theme";
 import { ScrollView } from "react-native-gesture-handler";
 import CompactFoodHeader from "@/components/HomeHeader/HomeHeader";
 import FoodHeading from "@/components/FoodHeading";
-import RestaurantCard from "@/components/RestaurantCard";
 import { useGetAllRestaurantsQuery } from "@/redux/services/resturantApi";
+import RestaurantFilters, { FilterType } from "@/components/RestaurantFilters/RestaurantFilters";
+import VegToggleModal from "@/components/VegToggleModal/VegToggleModal";
+import RestaurantCard from "@/components/RestaurantCard";
 
 export default function Home() {
   const { data, isLoading, error, refetch } = useGetAllRestaurantsQuery();
   const router = useRouter();
+  const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
+  const [isVegOnly, setIsVegOnly] = useState(false);
+  const [showVegModal, setShowVegModal] = useState(false);
+  const [pendingVegState, setPendingVegState] = useState(false);
 
   // ✅ CORRECT PATH
   const restaurants = data?.data?.restaurants || [];
- 
+
+  // Handle Veg Toggle with confirmation
+  const handleVegToggleRequest = (value: boolean) => {
+    setPendingVegState(value);
+    setShowVegModal(true);
+  };
+
+  const handleVegToggleConfirm = () => {
+    setIsVegOnly(pendingVegState);
+    setShowVegModal(false);
+  };
+
+  const handleVegToggleCancel = () => {
+    setShowVegModal(false);
+  };
+
+  // 🔍 Filter Logic
+  const filteredRestaurants = useMemo(() => {
+    let filtered = restaurants;
+
+    // Apply Veg Only filter first
+    if (isVegOnly) {
+      filtered = filtered.filter((restaurant: any) => restaurant.isVegOnly === true);
+    }
+
+    // Apply regular filters
+    if (selectedFilter !== 'all') {
+      filtered = filtered.filter((restaurant: any) => {
+        switch (selectedFilter) {
+          case 'freeDelivery':
+            return restaurant.deliveryFee === 0 || restaurant.freeDelivery === true;
+
+          case 'cloudKitchen':
+            return restaurant.isCloudKitchen === true || restaurant.type === 'cloud';
+
+          case 'fastDelivery':
+            return parseInt(restaurant.averageDeliveryTime) <= 30;
+
+          case 'topRated':
+            return restaurant.rating >= 4.0;
+
+          case 'newlyOpened':
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            return new Date(restaurant.createdAt) > thirtyDaysAgo;
+
+          default:
+            return true;
+        }
+      });
+    }
+
+    return filtered;
+  }, [restaurants, selectedFilter, isVegOnly]);
 
   if (isLoading) {
     return (
@@ -34,6 +94,8 @@ export default function Home() {
     );
   }
 
+  const hasActiveFilters = selectedFilter !== 'all' || isVegOnly;
+
   return (
     <View style={styles.container}>
       <CompactFoodHeader />
@@ -45,58 +107,105 @@ export default function Home() {
           subtitle="Freshly cooked food from nearby kitchens"
         />
 
+        {/* 🎯 Filter Section with Veg Toggle */}
+        <RestaurantFilters
+          selectedFilter={selectedFilter}
+          isVegOnly={isVegOnly}
+          onFilterChange={setSelectedFilter}
+          onVegToggle={handleVegToggleRequest}
+        />
+
+        {/* 📊 Results Counter */}
+        <View style={styles.resultsHeader}>
+          <Text style={styles.resultsText}>
+            {filteredRestaurants.length} {filteredRestaurants.length === 1 ? 'restaurant' : 'restaurants'} found
+          </Text>
+          {hasActiveFilters && (
+            <Text
+              style={styles.clearFilter}
+              onPress={() => {
+                setSelectedFilter('all');
+                setIsVegOnly(false);
+              }}
+            >
+              Clear all filters
+            </Text>
+          )}
+        </View>
+
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {restaurants.map((restaurant: any) => (
-            <RestaurantCard
-              key={restaurant._id}
-              id={restaurant._id}
+          {filteredRestaurants.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>No restaurants found</Text>
+              <Text style={styles.emptySubtitle}>
+                Try adjusting your filters or check back later
+              </Text>
+              <Text
+                style={styles.emptyButton}
+                onPress={() => {
+                  setSelectedFilter('all');
+                  setIsVegOnly(false);
+                }}
+              >
+                View all restaurants
+              </Text>
+            </View>
+          ) : (
+            filteredRestaurants.map((restaurant: any) => (
+              <RestaurantCard
+                key={restaurant._id}
+                id={restaurant._id}
+                name={restaurant.name}
+                cuisine={restaurant.cuisine}
 
-              name={restaurant.name}
-              cuisine={restaurant.cuisine}
+                /* 📍 Address (formatted) */
+                address={`${restaurant.address.street}, ${restaurant.address.city}`}
 
-              /* 📍 Address (formatted) */
-              address={`${restaurant.address.street}, ${restaurant.address.city}`}
+                /* ⭐ Temporary rating (until backend provides it) */
+                rating={restaurant.rating || 4.2}
+                totalRatings={restaurant.totalRatings || 120}
 
-              /* ⭐ Temporary rating (until backend provides it) */
-              rating={4.2}
-              totalRatings={120}
+                /* ⏱ Delivery */
+                deliveryTime={`${restaurant.averageDeliveryTime} min`}
+                averageDeliveryTime={restaurant.averageDeliveryTime}
 
-              /* ⏱ Delivery */
-              deliveryTime={`${restaurant.averageDeliveryTime} min`}
-              averageDeliveryTime={restaurant.averageDeliveryTime}
+                /* 📏 Distance (mock for now) */
+                distance="2.5 km"
 
-              /* 📏 Distance (mock for now) */
-              distance="2.5 km"
+                /* 🥗 Veg */
+                isVeg={restaurant.isVegOnly}
 
-              /* 🥗 Veg */
-              isVeg={restaurant.isVegOnly}
+                /* 💰 Price */
+                priceForTwo={restaurant.priceForTwo}
 
-              /* 💰 Price */
-              priceForTwo={restaurant.priceForTwo}
+                /* 🖼 Images */
+                images={[
+                  restaurant.images?.exterior,
+                  restaurant.images?.interior,
+                  restaurant.images?.menuCard,
+                ].filter(Boolean)}
 
-              /* 🖼 Images */
-              images={[
-                restaurant.images?.exterior,
-                restaurant.images?.interior,
-                restaurant.images?.menuCard,
-              ].filter(Boolean)}
-
-              /* 📞 Actions */
-             
-              onCall={() => console.log("Calling:", restaurant.phoneNumber)}
-            />
-          ))}
-
+                /* 📞 Actions */
+                onCall={() => console.log("Calling:", restaurant.phoneNumber)}
+              />
+            ))
+          )}
         </ScrollView>
       </View>
+
+      {/* Veg Toggle Confirmation Modal */}
+      <VegToggleModal
+        visible={showVegModal}
+        isVegOnly={pendingVegState}
+        onConfirm={handleVegToggleConfirm}
+        onCancel={handleVegToggleCancel}
+      />
     </View>
   );
-
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -105,7 +214,7 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    padding: Spacing.md,
+    flex: 1,
   },
 
   center: {
@@ -115,19 +224,59 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accentSoft,
   },
 
-  subtitle: {
-    marginTop: Spacing.sm,
+  resultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+
+  resultsText: {
+    fontSize: 13,
+    fontWeight: '600',
     color: Colors.muted,
+  },
+
+  clearFilter: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.secondary,
+    marginBottom: 8,
+  },
+
+  emptySubtitle: {
+    fontSize: 14,
+    color: Colors.muted,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+
+  emptyButton: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.primarySoft,
+    borderRadius: 8,
   },
 
   scrollContent: {
-    paddingBottom: 300, // ✅ VERY IMPORTANT
-  },
-
-  averageDeliveryTime: {
-    marginTop: 4,
-    fontSize: 12,
-    color: Colors.muted,
-    fontWeight: "500",
+    paddingHorizontal: Spacing.md,
+    paddingBottom: 300,
   },
 });

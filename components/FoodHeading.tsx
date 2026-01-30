@@ -44,7 +44,11 @@ export default function FoodHeading({
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: Spacing.lg,
+        // marginBottom: Spacing.lg,
+        padding: Spacing.md,
+    },
+    content: {
+        padding: Spacing.md,
     },
 
     title: {

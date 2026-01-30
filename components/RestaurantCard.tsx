@@ -3,9 +3,13 @@ import { View, Text, StyleSheet, Pressable, Image, ScrollView, Dimensions } from
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Colors, Spacing } from "@/app/theme";
+import OrderPopup from "@/app/OrderPopup";
+import { DeliveryOption } from "./DeliveryOptionCard";
+import DeliverySelection from "./DeliverySelectionModal";
+import { calculateTrafficStatus, TrafficLight } from "./TrafficLight/TrafficLight";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const IMAGE_WIDTH = SCREEN_WIDTH - 32; // Accounting for card padding
+const IMAGE_WIDTH = SCREEN_WIDTH - 32;
 
 type Props = {
     id: string;
@@ -13,20 +17,24 @@ type Props = {
     cuisine: string;
     address: string;
     rating: number;
-    averageDeliveryTime: string; 
+    averageDeliveryTime: string;
     totalRatings: number;
     deliveryTime: string;
-    isVegOnly?:boolean;
-      isActive?: boolean;
+    isVegOnly?: boolean;
+    isActive?: boolean;
     distance: string;
     priceForTwo: number;
     discount?: string;
     isVeg: boolean;
-    image?: string; // Support old single image prop
-    images?: string[]; // Support new multiple images prop
+    image?: string;
+    images?: string[];
     isFavorite?: boolean;
     onPress?: () => void;
     onCall?: () => void;
+    // Optional traffic data from backend
+    currentOrders?: number;
+    maxCapacity?: number;
+    isAcceptingOrders?: boolean;
 };
 
 export default function RestaurantCard({
@@ -46,13 +54,33 @@ export default function RestaurantCard({
     isFavorite = false,
     onPress,
     onCall,
+    averageDeliveryTime,
+    // Traffic data with defaults
+    currentOrders = 3,
+    maxCapacity = 10,
+    isAcceptingOrders = true,
 }: Props) {
     const [favorite, setFavorite] = useState(isFavorite);
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollViewRef = useRef<ScrollView>(null);
+    const [orderPopupVisible, setOrderPopupVisible] = useState(false);
+    const [deliveryModalVisible, setDeliveryModalVisible] = useState(false);
+    const [orderData, setOrderData] = useState<any>(null);
 
-    // Convert single image to array if images prop not provided
     const imageArray = images || (image ? [image] : []);
+
+    // Convert distance string to number (e.g., "3.5 km" -> 3.5)
+    const distanceInKm = parseFloat(distance.replace(/[^\d.]/g, '')) || 3.5;
+
+    // Parse delivery time to number
+    const estimatedDeliveryTime = parseInt(averageDeliveryTime) || 30;
+
+    // Calculate traffic status
+    const trafficStatus = calculateTrafficStatus(
+        currentOrders,
+        maxCapacity,
+        isAcceptingOrders
+    );
 
     // Auto-slide effect
     useEffect(() => {
@@ -67,14 +95,13 @@ export default function RestaurantCard({
                 });
                 return nextIndex;
             });
-        }, 3000); // Slides every 3 seconds
+        }, 3000);
 
         return () => clearInterval(interval);
     }, [imageArray.length]);
 
     const toggleFavorite = () => {
         setFavorite(!favorite);
-        // Here you can add logic to save to backend/storage
     };
 
     const getRatingColor = (rating: number) => {
@@ -84,12 +111,11 @@ export default function RestaurantCard({
     };
 
     const menuCard = () => {
-  router.push({
-    pathname: "/menu/[restaurantId]",
-    params: { restaurantId: id },
-  });
-};
-
+        router.push({
+            pathname: "/menu/[restaurantId]",
+            params: { restaurantId: id },
+        });
+    };
 
     const handleScroll = (event: any) => {
         const contentOffsetX = event.nativeEvent.contentOffset.x;
@@ -97,164 +123,195 @@ export default function RestaurantCard({
         setCurrentIndex(index);
     };
 
-    return (
-        <Pressable
-            onPress={onPress}
-            style={({ pressed }) => [
-                styles.card,
-                { opacity: pressed ? 0.95 : 1 },
-            ]}
-        >
-            {/* Image Slider Section */}
-            <View style={styles.imageContainer}>
-                <ScrollView
-                    ref={scrollViewRef}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    onMomentumScrollEnd={handleScroll}
-                    scrollEventThrottle={16}
-                >
-                    {imageArray.map((img, index) => (
-                        <Image
-                            key={index}
-                            source={typeof img === 'string' ? { uri: img } : img}
-                            style={styles.image}
-                            resizeMode="cover"
-                        />
-                    ))}
-                </ScrollView>
+    const handleOrderConfirm = () => {
+        setOrderPopupVisible(false);
+        setDeliveryModalVisible(true);
+    };
 
-                {/* Pagination Dots */}
-                {imageArray.length > 1 && (
-                    <View style={styles.pagination}>
-                        {imageArray.map((_, index) => (
-                            <View
+    const handleDeliveryConfirm = (option: DeliveryOption, finalTotal: number) => {
+        setDeliveryModalVisible(false);
+        console.log("Selected Delivery Option:", option);
+        console.log("Final Total:", finalTotal);
+        console.log("Restaurant:", name);
+
+        alert(
+            `Order Confirmed!\n\nRestaurant: ${name}\nDelivery: ${option === "self" ? "Self Pickup" : "Home Delivery"}\nTotal: ₹${finalTotal.toFixed(2)}`
+        );
+    };
+
+    const handleDeliveryClose = () => {
+        setDeliveryModalVisible(false);
+        setOrderPopupVisible(true);
+    };
+
+    return (
+        <>
+            <Pressable
+                onPress={onPress}
+                style={({ pressed }) => [
+                    styles.card,
+                    { opacity: pressed ? 0.95 : 1 },
+                ]}
+            >
+                {/* Image Slider Section */}
+                <View style={styles.imageContainer}>
+                    <ScrollView
+                        ref={scrollViewRef}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        onMomentumScrollEnd={handleScroll}
+                        scrollEventThrottle={16}
+                    >
+                        {imageArray.map((img, index) => (
+                            <Image
                                 key={index}
-                                style={[
-                                    styles.paginationDot,
-                                    currentIndex === index && styles.paginationDotActive,
-                                ]}
+                                source={typeof img === 'string' ? { uri: img } : img}
+                                style={styles.image}
+                                resizeMode="cover"
                             />
                         ))}
-                    </View>
-                )}
+                    </ScrollView>
 
-                {/* Discount Badge */}
-                {discount && (
-                    <View style={styles.discountBadge}>
-                        <Ionicons name="pricetag" size={12} color="#fff" />
-                        <Text style={styles.discountText}>{discount}</Text>
-                    </View>
-                )}
-
-                {/* Favorite Button */}
-                <Pressable
-                    onPress={toggleFavorite}
-                    style={styles.favoriteButton}
-                >
-                    <Ionicons
-                        name={favorite ? "heart" : "heart-outline"}
-                        size={20}
-                        color={favorite ? "#EF4444" : "#fff"}
-                    />
-                </Pressable>
-
-                {/* Veg/Non-Veg Badge */}
-                <View style={[styles.vegBadge, { backgroundColor: isVeg ? "#10B981" : "#EF4444" }]}>
-                    <View style={[styles.vegDot, { borderColor: isVeg ? "#10B981" : "#EF4444" }]}>
-                        <View style={[styles.vegDotInner, { backgroundColor: isVeg ? "#10B981" : "#EF4444" }]} />
-                    </View>
-                </View>
-            </View>
-
-            {/* Content Section */}
-            <View style={styles.content}>
-                {/* Restaurant Name & Cuisine */}
-                <View style={styles.header}>
-                    <View style={styles.nameSection}>
-                        <Text style={styles.name} numberOfLines={1}>{name}</Text>
-                        <Text style={styles.cuisine} numberOfLines={1}>{cuisine}</Text>
-                    </View>
-                </View>
-
-                {/* Rating, Time & Distance */}
-                <View style={styles.metaRow}>
-                    <View style={styles.metaItem}>
-                        <View style={[styles.ratingBadge, { backgroundColor: getRatingColor(rating) + "20" }]}>
-                            <Ionicons name="star" size={12} color={getRatingColor(rating)} />
-                            <Text style={[styles.ratingText, { color: getRatingColor(rating) }]}>
-                                {rating}
-                            </Text>
+                    {imageArray.length > 1 && (
+                        <View style={styles.pagination}>
+                            {imageArray.map((_, index) => (
+                                <View
+                                    key={index}
+                                    style={[
+                                        styles.paginationDot,
+                                        currentIndex === index && styles.paginationDotActive,
+                                    ]}
+                                />
+                            ))}
                         </View>
-                        <Text style={styles.ratingsCount}>({totalRatings}+)</Text>
-                    </View>
+                    )}
 
-                    <View style={styles.divider} />
+                    {discount && (
+                        <View style={styles.discountBadge}>
+                            <Ionicons name="pricetag" size={12} color="#fff" />
+                            <Text style={styles.discountText}>{discount}</Text>
+                        </View>
+                    )}
 
-                    <View style={styles.metaItem}>
-                        <Ionicons name="time-outline" size={14} color={Colors.muted} />
-                        <Text style={styles.metaText}>{deliveryTime}</Text>
-                    </View>
+                    <Pressable
+                        onPress={toggleFavorite}
+                        style={styles.favoriteButton}
+                    >
+                        <Ionicons
+                            name={favorite ? "heart" : "heart-outline"}
+                            size={20}
+                            color={favorite ? "#EF4444" : "#fff"}
+                        />
+                    </Pressable>
 
-                    <View style={styles.divider} />
-
-                    <View style={styles.metaItem}>
-                        <Ionicons name="location-outline" size={14} color={Colors.muted} />
-                        <Text style={styles.metaText}>{distance}</Text>
+                    <View style={[styles.vegBadge, { backgroundColor: isVeg ? "#10B981" : "#EF4444" }]}>
+                        <View style={[styles.vegDot, { borderColor: isVeg ? "#10B981" : "#EF4444" }]}>
+                            <View style={[styles.vegDotInner, { backgroundColor: isVeg ? "#10B981" : "#EF4444" }]} />
+                        </View>
                     </View>
                 </View>
 
-                {/* Address */}
-                <View style={styles.addressRow}>
-                    <Ionicons name="navigate-outline" size={14} color={Colors.muted} />
-                    <Text style={styles.address} numberOfLines={1}>{address}</Text>
+                {/* Content Section */}
+                <View style={styles.content}>
+                    <View style={styles.header}>
+                        <View style={styles.nameSection}>
+                            <Text style={styles.name} numberOfLines={1}>{name}</Text>
+                            <Text style={styles.cuisine} numberOfLines={1}>{cuisine}</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.metaRow}>
+                        <View style={styles.metaItem}>
+                            <View style={[styles.ratingBadge, { backgroundColor: getRatingColor(rating) + "20" }]}>
+                                <Ionicons name="star" size={12} color={getRatingColor(rating)} />
+                                <Text style={[styles.ratingText, { color: getRatingColor(rating) }]}>
+                                    {rating}
+                                </Text>
+                            </View>
+                            <Text style={styles.ratingsCount}>({totalRatings}+)</Text>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.metaItem}>
+                            <Ionicons name="time-outline" size={14} color={Colors.muted} />
+                            <Text style={styles.metaText}>{deliveryTime}</Text>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.metaItem}>
+                            <Ionicons name="location-outline" size={14} color={Colors.muted} />
+                            <Text style={styles.metaText}>{distance}</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.addressRow}>
+                        <Ionicons name="navigate-outline" size={14} color={Colors.muted} />
+                        <Text style={styles.address} numberOfLines={1}>{address}</Text>
+                    </View>
+
+                    {/* Traffic Light - Fixed */}
+                    <TrafficLight
+                        status={trafficStatus}
+                        deliveryTime={estimatedDeliveryTime}
+                    />
+
+                    {/* Action Buttons */}
+                    <View style={styles.actionRow}>
+                        <Pressable
+                            style={({ pressed }) => [
+                                styles.actionBtn,
+                                styles.callBtn,
+                                { opacity: pressed ? 0.8 : 1 },
+                            ]}
+                            onPress={onCall}
+                        >
+                            <Ionicons name="call" size={16} color={Colors.primary} />
+                            <Text style={styles.callText}>Call</Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={({ pressed }) => [
+                                styles.actionBtn,
+                                styles.whatsappBtn,
+                                { opacity: pressed ? 0.85 : 1 },
+                            ]}
+                        >
+                            <Ionicons name="logo-whatsapp" size={16} color="#fff" />
+                            <Text style={styles.whatsappText}>WhatsApp</Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={({ pressed }) => [
+                                styles.actionBtn,
+                                styles.menuBtn,
+                                { opacity: pressed ? 0.9 : 1 },
+                            ]}
+                            onPress={menuCard}
+                        >
+                            <Text style={styles.menuText}>Menu </Text>
+                            <Ionicons name="arrow-forward" size={14} color="#fff" />
+                        </Pressable>
+                    </View>
                 </View>
+            </Pressable>
 
-                {/* Action Buttons */}
-                <View style={styles.actionRow}>
-                    {/* 📞 Call */}
-                    <Pressable
-                        style={({ pressed }) => [
-                            styles.actionBtn,
-                            styles.callBtn,
-                            { opacity: pressed ? 0.8 : 1 },
-                        ]}
-                        onPress={onCall}
-                    >
-                        <Ionicons name="call" size={16} color={Colors.primary} />
-                        <Text style={styles.callText}>Call</Text>
-                    </Pressable>
+            <OrderPopup
+                visible={orderPopupVisible}
+                order={orderData}
+                onConfirm={handleOrderConfirm}
+            />
 
-                    {/* 💬 WhatsApp */}
-                    <Pressable
-                        style={({ pressed }) => [
-                            styles.actionBtn,
-                            styles.whatsappBtn,
-                            { opacity: pressed ? 0.85 : 1 },
-                        ]}
-                    // onPress={onWhatsApp}
-                    >
-                        <Ionicons name="logo-whatsapp" size={16} color="#fff" />
-                        <Text style={styles.whatsappText}>WhatsApp</Text>
-                    </Pressable>
-
-                    {/* 📋 Menu */}
-                    <Pressable
-                        style={({ pressed }) => [
-                            styles.actionBtn,
-                            styles.menuBtn,
-                            { opacity: pressed ? 0.9 : 1 },
-                        ]}
-                        onPress={menuCard}
-                    >
-                        <Text style={styles.menuText}>Menu </Text>
-                        <Ionicons name="arrow-forward" size={14} color="#fff" />
-                    </Pressable>
-                </View>
-
-            </View>
-        </Pressable>
+            <DeliverySelection
+                visible={deliveryModalVisible}
+                order={orderData}
+                distance={distanceInKm}
+                onConfirm={handleDeliveryConfirm}
+                onClose={handleDeliveryClose}
+            />
+        </>
     );
 }
 
@@ -355,10 +412,14 @@ const styles = StyleSheet.create({
         padding: Spacing.md,
     },
     header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
         marginBottom: Spacing.sm,
     },
     nameSection: {
         flex: 1,
+        marginRight: 12,
     },
     name: {
         fontSize: 18,
@@ -409,17 +470,6 @@ const styles = StyleSheet.create({
         color: Colors.muted,
         fontWeight: "500",
     },
-    priceRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 6,
-        marginBottom: Spacing.xs,
-    },
-    priceText: {
-        fontSize: 13,
-        color: Colors.secondary,
-        fontWeight: "600",
-    },
     addressRow: {
         flexDirection: "row",
         alignItems: "center",
@@ -436,38 +486,6 @@ const styles = StyleSheet.create({
         gap: 10,
         marginTop: Spacing.xs,
     },
-    callButton: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: Colors.primarySoft,
-        paddingVertical: 12,
-        borderRadius: 12,
-        gap: 6,
-        borderWidth: 1,
-        borderColor: Colors.primary,
-    },
-    callText: {
-        fontSize: 14,
-        fontWeight: "700",
-        color: Colors.primary,
-    },
-    orderButton: {
-        flex: 2,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: Colors.primary,
-        paddingVertical: 12,
-        borderRadius: 12,
-        gap: 6,
-    },
-    orderText: {
-        fontSize: 14,
-        fontWeight: "700",
-        color: "#fff",
-    },
     actionBtn: {
         flex: 1,
         flexDirection: "row",
@@ -483,10 +501,14 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary,
         fontSize: 12,
     },
+    callText: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: Colors.primary,
+    },
     whatsappBtn: {
         backgroundColor: "#25D366",
         paddingHorizontal: 12,
-
     },
     whatsappText: {
         color: "#fff",
