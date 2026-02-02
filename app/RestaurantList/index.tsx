@@ -101,11 +101,12 @@ export default function Home() {
       <CompactFoodHeader />
 
       <View style={styles.content}>
-        <FoodHeading
-          title="What are you craving today?"
+       
+        {/* <FoodHeading
+          title="What are you craving ?"
           highlightWord="craving"
           subtitle="Freshly cooked food from nearby kitchens"
-        />
+        /> */}
 
         {/* 🎯 Filter Section with Veg Toggle */}
         <RestaurantFilters
@@ -114,6 +115,7 @@ export default function Home() {
           onFilterChange={setSelectedFilter}
           onVegToggle={handleVegToggleRequest}
         />
+        
 
         {/* 📊 Results Counter */}
         <View style={styles.resultsHeader}>
@@ -132,10 +134,12 @@ export default function Home() {
             </Text>
           )}
         </View>
+        
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          
         >
           {filteredRestaurants.length === 0 ? (
             <View style={styles.emptyState}>
@@ -277,6 +281,6 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     paddingHorizontal: Spacing.md,
-    paddingBottom: 300,
+    paddingBottom: 50,
   },
 });

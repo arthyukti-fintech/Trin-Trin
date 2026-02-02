@@ -255,6 +255,8 @@ export default function CompactFoodHeader() {
 const styles = StyleSheet.create({
     safe: {
         backgroundColor: Colors.accentSoft,
+      
+      
     },
 
     orderBanner: {
@@ -264,11 +266,14 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingHorizontal: 16,
         paddingVertical: 10,
+       
+       
     },
 
     orderContent: {
         flexDirection: "row",
         alignItems: "center",
+       
     },
 
     pulseWrap: {
@@ -279,6 +284,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         marginRight: 10,
+       
+        
     },
 
     pulseDot: {
@@ -301,6 +308,9 @@ const styles = StyleSheet.create({
     header: {
         paddingHorizontal: 16,
         paddingVertical: 12,
+       
+       
+        
     },
 
     topRow: {
@@ -397,7 +407,7 @@ const styles = StyleSheet.create({
         height: 48,
         borderWidth: 1,
         borderColor: "#E5E7EB",
-        marginBottom: 12,
+        marginBottom: 0,
     },
 
     searchInput: {
