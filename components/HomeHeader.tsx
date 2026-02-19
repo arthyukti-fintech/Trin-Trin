@@ -12,8 +12,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Colors } from "../theme";
+
 import { styles } from "./HomeHeader/HomeHeaderStyle";
+import { Colors } from "@/app/theme";
 
 export default function CompactFoodHeader() {
     const navigation = useNavigation();

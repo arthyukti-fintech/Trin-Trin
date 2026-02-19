@@ -28,11 +28,12 @@ export interface Profile {
   _id: string;
   phoneNumber: string;
   fullName: string;
+  
   email?: string;
   gender?: string | null; // backend currently sends "F"
   emailVerification: boolean;
   status: "normal" | "premium";
-  role: "user" | "admin" | "superAdmin";
+  role: "user" | "admin" | "superAdmin" | "resturantsOwner";
   isActive: boolean;
 
   referredCount: number;

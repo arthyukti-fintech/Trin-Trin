@@ -14,6 +14,7 @@ export const Colors = {
   /** ⚪ BACKGROUNDS */
   background: "#FFF9F0",     // Warm cream (matches logo bg)
   card: "#FFFFFF",
+  white: "#FFFFFF",
 
   /** ✅ STATUS */
   success: "#2E7D32",        // Green (veg / order success)

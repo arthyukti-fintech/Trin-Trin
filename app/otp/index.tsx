@@ -95,7 +95,7 @@ export default function Otp() {
         try {
             console.log("Enter in verify");
             await verifyOtp(enteredOtp);
-            router.push("/RestaurantList");
+            router.push("/RestaurantDashboard");
         } catch (err) {
             setError("Invalid OTP Code");
             setOtp(["", "", "", "", "", ""]);
