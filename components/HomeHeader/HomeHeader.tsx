@@ -14,8 +14,10 @@ import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "@/app/theme";
 import { router } from "expo-router";
+import { useGetMyProfileQuery } from "@/redux/services/profileApi";
+import { useLocalSearchParams } from "expo-router";
 
-export default function CompactFoodHeader() {
+export default function CompactFoodHeader({ profileData }: any) {
     const navigation = useNavigation();
     const [showLocationDropdown, setShowLocationDropdown] = useState(false);
     const [showSearchResults, setShowSearchResults] = useState(false);
@@ -28,15 +30,27 @@ export default function CompactFoodHeader() {
         address: "123 MG Road",
         icon: "home",
     });
+    const { restaurantId } = useLocalSearchParams();
 
-    // Demo data
-    const userName = "Arman";
+
+    // console.log("jhserf", profileData?.fullName)
+
+    //    const {
+    //       data: profileData,
+    //       isLoading: isProfileLoading,
+    //       error: profileError,
+    //     } = useGetMyProfileQuery();
+
+    const userName = profileData?.data?.fullName?.split(" ")[0] || "User";
+  
     const userEmail = "arman@example.com";
     const userPhone = "+91 98765 43210";
     const rewardPoints = 1250;
     const estimatedDelivery = "25 min";
+    // console.log("profiledata------------->", profileData?.data?.role)
+    const isRestaurantOwner =
+        profileData?.data?.role === "resturantsOwner";
 
-    // Toggle order banner every 2 minutes
     useEffect(() => {
         const interval = setInterval(() => {
             setShowOrderBanner(prev => !prev);
@@ -79,21 +93,28 @@ export default function CompactFoodHeader() {
     return (
         <SafeAreaView edges={["top"]} style={styles.safe}>
             {/* Order Banner - Appears/Disappears every 2 minutes */}
-            {showOrderBanner && (
-                <View style={styles.orderBanner}>
-                    <View style={styles.orderContent}>
-                        <View style={styles.pulseWrap}>
-                            <View style={styles.pulseDot} />
+
+            {
+                isRestaurantOwner
+                    ? null
+                    : showOrderBanner && (
+                        <View style={styles.orderBanner}>
+                            <View style={styles.orderContent}>
+                                <View style={styles.pulseWrap}>
+                                    <View style={styles.pulseDot} />
+                                </View>
+                                <Text style={styles.orderText}>
+                                    Order arriving{" "}
+                                    <Text style={styles.orderTime}>{estimatedDelivery}</Text>
+                                </Text>
+                            </View>
+                            <Pressable onPress={() => setShowOrderBanner(false)}>
+                                <Ionicons name="close-circle" size={20} color="#fff" />
+                            </Pressable>
                         </View>
-                        <Text style={styles.orderText}>
-                            Order arriving in <Text style={styles.orderTime}>{estimatedDelivery}</Text>
-                        </Text>
-                    </View>
-                    <Pressable onPress={() => setShowOrderBanner(false)}>
-                        <Ionicons name="close-circle" size={20} color="#fff" />
-                    </Pressable>
-                </View>
-            )}
+                    )
+            }
+
 
             <View style={styles.header}>
                 {/* Top Row - Profile & Location */}
@@ -108,7 +129,8 @@ export default function CompactFoodHeader() {
                     >
                         <View style={styles.avatarWrap}>
                             <Text style={styles.avatarText}>
-                                {userName.charAt(0).toUpperCase()}
+                                {userName?.charAt(0)?.toUpperCase() || "U"}
+
                             </Text>
                             <View style={styles.rewardsBadge}>
                                 <Ionicons name="star" size={10} color="#FFD700" />
@@ -137,23 +159,55 @@ export default function CompactFoodHeader() {
                     </Pressable>
                 </View>
 
-                {/* Search Bar */}
-                <View style={styles.searchBar}>
-                    <Ionicons name="search" size={20} color={Colors.primary} />
-                    <TextInput
-                        value={searchQuery}
-                        onChangeText={handleSearch}
-                        onFocus={() => searchQuery && setShowSearchResults(true)}
-                        placeholder="Search dishes or restaurants..."
-                        placeholderTextColor={Colors.muted}
-                        style={styles.searchInput}
-                    />
-                    {searchQuery.length > 0 && (
-                        <Pressable onPress={() => { setSearchQuery(""); setShowSearchResults(false); }}>
-                            <Ionicons name="close-circle" size={20} color={Colors.muted} />
+
+                {isRestaurantOwner ? (
+                    /* 🧑‍🍳 Restaurant Owner UI */
+                    <View style={styles.ownerActions}>
+                        <Pressable style={styles.ownerBtn}>
+                            <Text style={styles.ownerBtnText}> Dashboard</Text>
                         </Pressable>
-                    )}
-                </View>
+
+                        <Pressable
+                            style={styles.ownerBtnSecondary}
+                            onPress={() =>
+                                router.push({
+                                    pathname: "/TakeOrders",
+                                    params: {
+                                        restaurantId: restaurantId,
+                                        
+                                    },
+                                })
+                            }
+                        >
+
+                            <Text style={styles.ownerBtnText}>Take Orders</Text>
+                        </Pressable>
+                    </View>
+                ) : (
+                    /* 👤 Customer UI */
+                    <View style={styles.searchBar}>
+                        <Ionicons name="search" size={20} color={Colors.primary} />
+                        <TextInput
+                            value={searchQuery}
+                            onChangeText={handleSearch}
+                            onFocus={() => searchQuery && setShowSearchResults(true)}
+                            placeholder="Search dishes or restaurants..."
+                            placeholderTextColor={Colors.muted}
+                            style={styles.searchInput}
+                        />
+                        {searchQuery.length > 0 && (
+                            <Pressable
+                                onPress={() => {
+                                    setSearchQuery("");
+                                    setShowSearchResults(false);
+                                }}
+                            >
+                                <Ionicons name="close-circle" size={20} color={Colors.muted} />
+                            </Pressable>
+                        )}
+                    </View>
+                )}
+
             </View>
 
             {/* Profile Modal */}
@@ -255,8 +309,8 @@ export default function CompactFoodHeader() {
 const styles = StyleSheet.create({
     safe: {
         backgroundColor: Colors.accentSoft,
-      
-      
+
+
     },
 
     orderBanner: {
@@ -266,14 +320,14 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingHorizontal: 16,
         paddingVertical: 10,
-       
-       
+
+
     },
 
     orderContent: {
         flexDirection: "row",
         alignItems: "center",
-       
+
     },
 
     pulseWrap: {
@@ -284,8 +338,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         marginRight: 10,
-       
-        
+
+
     },
 
     pulseDot: {
@@ -308,9 +362,9 @@ const styles = StyleSheet.create({
     header: {
         paddingHorizontal: 16,
         paddingVertical: 12,
-       
-       
-        
+
+
+
     },
 
     topRow: {
@@ -685,4 +739,32 @@ const styles = StyleSheet.create({
         color: Colors.muted,
         marginHorizontal: 6,
     },
+    ownerActions: {
+        flexDirection: "row",
+        gap: 12,
+        padding: 16,
+    },
+
+    ownerBtn: {
+        flex: 1,
+        backgroundColor: Colors.primary,
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: "center",
+    },
+
+    ownerBtnSecondary: {
+        flex: 1,
+        backgroundColor: Colors.secondary,
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: "center",
+    },
+
+    ownerBtnText: {
+        color: "#fff",
+        fontWeight: "600",
+        fontSize: 15,
+    },
+
 });

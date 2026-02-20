@@ -19,19 +19,21 @@ import Animated, {
     useSharedValue,
     withSpring
 } from "react-native-reanimated";
-import { useAuth } from "../context/AuthContext";
+
 import { Colors } from "../theme";
 import { styles } from "./loginStyle";
 import { useLoginMutation } from "@/redux/services/authApi";
 import Toast from "react-native-toast-message";
 import { getApiErrorMessage } from "@/utils/helper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
     const router = useRouter();
     const [phoneNumber, setPhoneNumber] = useState("");
     // const [error, setError] = useState("");
-    const [login, { isLoading, error }] = useLoginMutation();
+    // const [login, { isLoading, error }] = useLoginMutation();
+    const { login } = useAuth();
 
     // Animation value for button press
     const buttonScale = useSharedValue(1);
@@ -43,15 +45,10 @@ export default function Login() {
         const formattedPhone = `+91${phoneNumber}`;
 
         try {
-            const res = await login({ phoneNumber: formattedPhone }).unwrap();
+            console.log("📞 Calling AuthContext.login with:", formattedPhone);
 
-            const accessToken = res?.data?.accessToken;
-            console.log(accessToken)
-
-            if (accessToken) {
-                // ✅ Store token
-                await AsyncStorage.setItem("accessToken", accessToken);
-            }
+            // ✅ THIS IS THE FIX
+            await login(formattedPhone);
 
             Toast.show({
                 type: "success",
@@ -59,20 +56,19 @@ export default function Login() {
                 text2: "OTP sent successfully",
             });
 
-            router.push("/RestaurantList");
+            router.push("/(user)/otp");
 
         } catch (err) {
-            const errorMessage = getApiErrorMessage(err);
-
             Toast.show({
                 type: "error",
                 text1: "Failed to Send OTP",
-                text2: errorMessage,
+                text2: "Something went wrong",
             });
 
             console.log("Login Error:", err);
         }
     };
+
 
     const loginBanner = require("../../assets/images/image.png")
 
@@ -135,7 +131,8 @@ export default function Login() {
                             </Text>
 
                             {/* Input Field */}
-                            <View style={[styles.inputWrapper, error ? styles.inputError : null]}>
+                            <View style={styles.inputWrapper}>
+
                                 <View style={styles.prefixWrap}>
                                     <Text style={styles.prefix}>🇮🇳 +91</Text>
                                 </View>

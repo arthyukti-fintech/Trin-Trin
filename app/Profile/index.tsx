@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View, ScrollView } from "react-native";
 import { Colors } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,6 +6,8 @@ import BackHeader from "@/components/BackHeader";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useGetMyProfileQuery } from "@/redux/services/profileApi";
+import * as ImagePicker from 'expo-image-picker';
+import { Image, Alert } from 'react-native';
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -21,6 +23,7 @@ export default function ProfileScreen() {
   const rewardPoints = 1250;
   const memberSince = "Member since Dec 2023";
   type IconName = React.ComponentProps<typeof Ionicons>["name"];
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const actions: { icon: IconName; label: string; color: string; count: string }[] = [
     { icon: "calendar-outline", label: "Bookings", count: "3", color: "#E23744" },
@@ -103,6 +106,29 @@ export default function ProfileScreen() {
       },
     ];
 
+
+  const pickImage = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert('Permission required', 'Please allow gallery access');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
+
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -116,23 +142,35 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.gradientHeader}
         >
-          <BackHeader title="Profile" backTo="/RestaurantList" titleStyle={{ color: "#fff" }} />
-          <View style={styles.profileHeader}>
-            <View style={styles.avatarContainer}>
+          <BackHeader title="Profile" titleStyle={{ color: "#fff" }} />
+          <View style={styles.avatarContainer}>
+            <View style={styles.avatarWrapper}>
               <View style={styles.largeAvatar}>
-                <Text style={styles.largeAvatarText}>
-                  {data?.data?.fullName?.charAt(0)?.toUpperCase()}
-                </Text>
+                {profileImage ? (
+                  <Image
+                    source={{ uri: profileImage }}
+                    style={styles.avatarImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.avatarFallback}>
+                    <Text style={styles.largeAvatarText}>
+                      {data?.data?.fullName?.charAt(0)?.toUpperCase() || "U"}
+                    </Text>
+                  </View>
+                )}
               </View>
-              <Pressable style={styles.editAvatarButton}>
-                <Ionicons name="camera" size={16} color="#fff" />
+
+              <Pressable
+                style={styles.editAvatarButton}
+                onPress={pickImage}
+                hitSlop={10}
+              >
+                <Ionicons name="camera" size={18} color="#fff" />
               </Pressable>
             </View>
-
-            <Text style={styles.profileName}>{data?.data?.fullName}</Text>
-            {/* <Text style={styles.profileEmail}>{userEmail}</Text> */}
-            <Text style={styles.memberSince}>{memberSince}</Text>
           </View>
+
         </LinearGradient>
 
         {/* Rewards Card */}
@@ -259,40 +297,53 @@ const styles = StyleSheet.create({
   },
 
   avatarContainer: {
-    position: "relative",
-    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   largeAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "rgba(255,255,255,0.3)",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 4,
-    borderColor: "rgba(255,255,255,0.5)",
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#E0E0E0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
 
   largeAvatarText: {
-    color: "#fff",
-    fontSize: 40,
-    fontWeight: "700",
+    fontSize: 48,
+    color: '#555',
+    fontWeight: 'bold',
+  },
+
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary + '20', // Semi-transparent primary color
+  },
+  avatarWrapper: {
+    position: 'relative',
+    width: 130,
+    height: 130,
   },
 
   editAvatarButton: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: "#E23744",
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 3,
-    borderColor: "#fff",
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    backgroundColor: '#000',
+    padding: 8,
+    borderRadius: 20,
   },
+
 
   profileName: {
     fontSize: 26,

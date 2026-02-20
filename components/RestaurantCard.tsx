@@ -7,6 +7,7 @@ import OrderPopup from "@/app/OrderPopup";
 import { DeliveryOption } from "./DeliveryOptionCard";
 import DeliverySelection from "./DeliverySelectionModal";
 import { calculateTrafficStatus, TrafficLight } from "./TrafficLight/TrafficLight";
+import { useStartCallingMutation } from "@/redux/services/startcallingpostResApi";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const IMAGE_WIDTH = SCREEN_WIDTH - 32;
@@ -66,7 +67,8 @@ export default function RestaurantCard({
     const [orderPopupVisible, setOrderPopupVisible] = useState(false);
     const [deliveryModalVisible, setDeliveryModalVisible] = useState(false);
     const [orderData, setOrderData] = useState<any>(null);
-
+    const [startCalling, { data, isLoading, error }] =
+        useStartCallingMutation();
     const imageArray = images || (image ? [image] : []);
 
     // Convert distance string to number (e.g., "3.5 km" -> 3.5)
@@ -81,6 +83,19 @@ export default function RestaurantCard({
         maxCapacity,
         isAcceptingOrders
     );
+
+    const handleCallPress = async () => {
+        try {
+            console.log("Calling restaurant ID:", id);
+
+            const res = await startCalling(id).unwrap();
+
+            console.log("Call Success:", res);
+        } catch (err) {
+            console.log("Call Error:", err);
+        }
+    };
+
 
     // Auto-slide effect
     useEffect(() => {
@@ -266,7 +281,7 @@ export default function RestaurantCard({
                                 styles.callBtn,
                                 { opacity: pressed ? 0.8 : 1 },
                             ]}
-                            onPress={onCall}
+                            onPress={handleCallPress}
                         >
                             <Ionicons name="call" size={16} color={Colors.primary} />
                             <Text style={styles.callText}>Call</Text>
