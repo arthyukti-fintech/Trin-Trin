@@ -96,7 +96,6 @@ export default function RestaurantCard({
         }
     };
 
-
     // Auto-slide effect
     useEffect(() => {
         if (imageArray.length <= 1) return;
@@ -229,49 +228,51 @@ export default function RestaurantCard({
 
                 {/* Content Section */}
                 <View style={styles.content}>
-                    <View style={styles.header}>
-                        <View style={styles.nameSection}>
+                    <View style={{ flexDirection: 'row', alignItems: 'stretch' }}>
+
+                        {/* Left Section - 80% */}
+                        <View style={{ flex: 0.8 }}>
                             <Text style={styles.name} numberOfLines={1}>{name}</Text>
                             <Text style={styles.cuisine} numberOfLines={1}>{cuisine}</Text>
-                        </View>
-                    </View>
 
-                    <View style={styles.metaRow}>
-                        <View style={styles.metaItem}>
-                            <View style={[styles.ratingBadge, { backgroundColor: getRatingColor(rating) + "20" }]}>
-                                <Ionicons name="star" size={12} color={getRatingColor(rating)} />
-                                <Text style={[styles.ratingText, { color: getRatingColor(rating) }]}>
-                                    {rating}
-                                </Text>
+                            <View style={styles.metaRow}>
+                                <View style={styles.metaItem}>
+                                    <View style={[styles.ratingBadge, { backgroundColor: getRatingColor(rating) + "20" }]}>
+                                        <Ionicons name="star" size={12} color={getRatingColor(rating)} />
+                                        <Text style={[styles.ratingText, { color: getRatingColor(rating) }]}>
+                                            {rating}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.ratingsCount}>({totalRatings}+)</Text>
+                                </View>
+
+                                <View style={styles.divider} />
+
+                                <View style={styles.metaItem}>
+                                    <Ionicons name="time-outline" size={14} color={Colors.muted} />
+                                    <Text style={styles.metaText}>{deliveryTime}</Text>
+                                </View>
+
+                                <View style={styles.divider} />
+
+                                <View style={styles.metaItem}>
+                                    <Ionicons name="location-outline" size={14} color={Colors.muted} />
+                                    <Text style={styles.metaText}>{distance}</Text>
+                                </View>
                             </View>
-                            <Text style={styles.ratingsCount}>({totalRatings}+)</Text>
+
+                            <View style={styles.addressRow}>
+                                <Ionicons name="navigate-outline" size={14} color={Colors.muted} />
+                                <Text style={styles.address} numberOfLines={1}>{address}</Text>
+                            </View>
                         </View>
 
-                        <View style={styles.divider} />
-
-                        <View style={styles.metaItem}>
-                            <Ionicons name="time-outline" size={14} color={Colors.muted} />
-                            <Text style={styles.metaText}>{deliveryTime}</Text>
+                        {/* Right Section - 20% Traffic Light */}
+                        <View style={{ flex: 0.2, alignItems: 'center', marginLeft: 100 }}>
+                            <TrafficLight status={trafficStatus} />
                         </View>
 
-                        <View style={styles.divider} />
-
-                        <View style={styles.metaItem}>
-                            <Ionicons name="location-outline" size={14} color={Colors.muted} />
-                            <Text style={styles.metaText}>{distance}</Text>
-                        </View>
                     </View>
-
-                    <View style={styles.addressRow}>
-                        <Ionicons name="navigate-outline" size={14} color={Colors.muted} />
-                        <Text style={styles.address} numberOfLines={1}>{address}</Text>
-                    </View>
-
-                    {/* Traffic Light - Fixed */}
-                    <TrafficLight
-                        status={trafficStatus}
-                        deliveryTime={estimatedDeliveryTime}
-                    />
 
                     {/* Action Buttons */}
                     <View style={styles.actionRow}>
@@ -279,34 +280,40 @@ export default function RestaurantCard({
                             style={({ pressed }) => [
                                 styles.actionBtn,
                                 styles.callBtn,
-                                { opacity: pressed ? 0.8 : 1 },
+                                {
+                                    transform: [{ scale: pressed ? 0.97 : 1 }],
+                                    opacity: pressed ? 0.9 : 1,
+                                },
                             ]}
                             onPress={handleCallPress}
                         >
-                            <Ionicons name="call" size={16} color={Colors.primary} />
+                            <Ionicons name="call" size={18} color="#fff" />
                             <Text style={styles.callText}>Call</Text>
                         </Pressable>
 
-                        <Pressable
-                            style={({ pressed }) => [
-                                styles.actionBtn,
-                                styles.whatsappBtn,
-                                { opacity: pressed ? 0.85 : 1 },
-                            ]}
-                        >
-                            <Ionicons name="logo-whatsapp" size={16} color="#fff" />
-                            <Text style={styles.whatsappText}>WhatsApp</Text>
-                        </Pressable>
+                        {/* <Pressable
+        style={({ pressed }) => [
+            styles.actionBtn,
+            styles.whatsappBtn,
+            { opacity: pressed ? 0.85 : 1 },
+        ]}
+    >
+        <Ionicons name="logo-whatsapp" size={16} color="#fff" />
+        <Text style={styles.whatsappText}>WhatsApp</Text>
+    </Pressable> */}
 
                         <Pressable
                             style={({ pressed }) => [
                                 styles.actionBtn,
                                 styles.menuBtn,
-                                { opacity: pressed ? 0.9 : 1 },
+                                {
+                                    transform: [{ scale: pressed ? 0.97 : 1 }],
+                                    opacity: pressed ? 0.9 : 1,
+                                },
                             ]}
                             onPress={menuCard}
                         >
-                            <Text style={styles.menuText}>Menu </Text>
+                            <Text style={styles.menuText}>Menu</Text>
                             <Ionicons name="arrow-forward" size={14} color="#fff" />
                         </Pressable>
                     </View>
@@ -497,45 +504,72 @@ const styles = StyleSheet.create({
         color: Colors.muted,
     },
     actionRow: {
-        flexDirection: "row",
-        gap: 10,
-        marginTop: Spacing.xs,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 12,
+        paddingHorizontal: 16,
+        marginTop: 8,
     },
     actionBtn: {
         flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        paddingVertical: 12,
-        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        borderRadius: 30,
+        gap: 8,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
     },
     callBtn: {
-        backgroundColor: Colors.primarySoft,
-        borderWidth: 1.5,
-        borderColor: Colors.primary,
-        fontSize: 12,
+        backgroundColor: Colors.primary,
+    },
+    callIconContainer: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 4,
     },
     callText: {
-        fontSize: 14,
-        fontWeight: "700",
-        color: Colors.primary,
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '600',
+        letterSpacing: 0.3,
+    },
+    callRipple: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 30,
     },
     whatsappBtn: {
-        backgroundColor: "#25D366",
-        paddingHorizontal: 12,
+        backgroundColor: '#25D366',
     },
     whatsappText: {
-        color: "#fff",
+        color: '#fff',
         fontSize: 14,
-        fontWeight: "700",
+        fontWeight: '600',
     },
     menuBtn: {
         backgroundColor: Colors.primary,
     },
     menuText: {
-        color: "#fff",
-        fontSize: 14,
-        fontWeight: "700",
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '600',
+        letterSpacing: 0.3,
     },
 });

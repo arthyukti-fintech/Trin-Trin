@@ -4,18 +4,31 @@ import { Colors } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
 import BackHeader from "@/components/BackHeader";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import { useGetMyProfileQuery } from "@/redux/services/profileApi";
 import * as ImagePicker from 'expo-image-picker';
 import { Image, Alert } from 'react-native';
+import { useLogoutMutation } from "@/redux/services/authApi";
+import { useDispatch } from "react-redux";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
 export default function ProfileScreen() {
-  const { data, isLoading, error, refetch, isFetching } = useGetMyProfileQuery();
+  const {
+    data,
+    isLoading: isProfileLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useGetMyProfileQuery();
+
+  const [
+    logout,
+    { isLoading: isLogoutLoading }
+  ] = useLogoutMutation();
 
   console.log(data,
-    isLoading,
+    isProfileLoading,
     isFetching,
     error, "this is profile data")
   const userName = "Arman";
@@ -24,6 +37,8 @@ export default function ProfileScreen() {
   const memberSince = "Member since Dec 2023";
   type IconName = React.ComponentProps<typeof Ionicons>["name"];
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const dispatch = useDispatch();
+  const router = useRouter();
 
   const actions: { icon: IconName; label: string; color: string; count: string }[] = [
     { icon: "calendar-outline", label: "Bookings", count: "3", color: "#E23744" },
@@ -106,7 +121,6 @@ export default function ProfileScreen() {
       },
     ];
 
-
   const pickImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -128,6 +142,17 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+
+      // 🔥 Navigate to login
+      router.replace("/login");
+
+    } catch (error) {
+      console.log("Logout error:", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -142,7 +167,7 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.gradientHeader}
         >
-          <BackHeader title="Profile" titleStyle={{ color: "#fff" }} />
+          <BackHeader title="Profile" titleStyle={{ color: "#fff" }} backTo={"/Home/CustomerHome"} />
           <View style={styles.avatarContainer}>
             <View style={styles.avatarWrapper}>
               <View style={styles.largeAvatar}>
@@ -259,9 +284,11 @@ export default function ProfileScreen() {
           ))}
 
           {/* Logout Button */}
-          <Pressable style={styles.logoutButton}>
+          <Pressable style={styles.logoutButton} onPress={handleLogout} disabled={isLogoutLoading}>
             <Ionicons name="log-out-outline" size={22} color="#E23744" />
-            <Text style={styles.logoutText}>Logout</Text>
+            <Text style={styles.logoutText}>
+              {isLogoutLoading ? "Logging out..." : "Logout"}
+            </Text>
           </Pressable>
         </View>
 

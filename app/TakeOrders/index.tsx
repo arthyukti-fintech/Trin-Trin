@@ -95,14 +95,14 @@ function TakeOrders() {
 
   // Filter dishes based on search query
   const filteredDishes = useMemo(() => {
-  if (!searchQuery.trim()) {
-    return dishes.map((dish, originalIndex) => ({ ...dish, originalIndex }));
-  }
-  const query = searchQuery.toLowerCase().trim();
-  return dishes
-    .map((dish, originalIndex) => ({ ...dish, originalIndex }))
-    .filter(dish => dish.name?.toLowerCase().includes(query) ?? false); // ✅ optional chaining
-}, [dishes, searchQuery]);
+    if (!searchQuery.trim()) {
+      return dishes.map((dish, originalIndex) => ({ ...dish, originalIndex }));
+    }
+    const query = searchQuery.toLowerCase().trim();
+    return dishes
+      .map((dish, originalIndex) => ({ ...dish, originalIndex }))
+      .filter(dish => dish.name?.toLowerCase().includes(query) ?? false); // ✅ optional chaining
+  }, [dishes, searchQuery]);
 
   // Helper to get animated value for a dish
   const getAnimatedValue = (dishId: string) => {

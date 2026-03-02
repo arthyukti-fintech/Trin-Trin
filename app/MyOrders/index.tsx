@@ -1,168 +1,434 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView } from "react-native";
-
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import BackHeader from "@/components/BackHeader";
 import { useRouter } from "expo-router";
 import { Colors } from "../theme";
+import { useGetMyOrdersQuery } from "@/redux/services/getordersApi";
 
-// TYPES
-export type OrderStatus = "delivered" | "processing" | "cancelled";
-export type TabType = "all" | OrderStatus;
+export type TabType = "all" | "completed" | "cancelled";
 
-export interface OrderItem {
+const TABS: { key: TabType; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "completed", label: "Completed" },
+  { key: "cancelled", label: "Cancelled" },
+];
+
+const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
+  completed: { color: "#16A34A", bg: "#F0FDF4", label: "Completed" },
+  cancelled: { color: "#DC2626", bg: "#FEF2F2", label: "Cancelled" },
+  confirmed: { color: "#D97706", bg: "#FEF9EE", label: "Confirmed" },
+  preparing: { color: "#7C3AED", bg: "#F5F3FF", label: "Preparing" },
+  on_the_way: { color: "#2563EB", bg: "#EFF6FF", label: "On the Way" },
+};
+
+// Match the shape returned by the API
+interface OrderAddress {
+  street: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
+interface OrderRestaurant {
+  id: string;
+  name: string;
+  address: OrderAddress;
+}
+
+interface OrderItem {
+  id: string;
   name: string;
   quantity: number;
   price: number;
 }
 
-export interface Order {
-  id: string;
-  date: string;
-  time: string;
-  status: OrderStatus;
+export interface MyOrder {
+  orderId: string;
+  orderNumber: string;
+  restaurant: OrderRestaurant;
   items: OrderItem[];
-  total: number;
-  restaurant: string;
-  deliveryAddress: string;
+  totalAmount: number;
+  status: string;
+  preparationStatus?: string;
+  statusMessage?: string;
+  progressPercentage?: number;
+  estimatedDeliveryTime?: string;
+  actualDeliveryTime?: string;
+  canCancel?: boolean;
+  orderDate: string;
+  completedAt?: string;
+  isInProgress?: boolean;
 }
 
-// MOCK DATA
-export const orderData: Order[] = [
-  {
-    id: "#ORD-2458",
-    date: "2024-12-11",
-    time: "2:30 PM",
-    status: "delivered",
-    items: [
-      { name: "Margherita Pizza", quantity: 2, price: 12.99 },
-      { name: "Caesar Salad", quantity: 1, price: 8.99 },
-      { name: "Garlic Bread", quantity: 1, price: 4.99 }
-    ],
-    total: 39.96,
-    restaurant: "Pizza Palace",
-    deliveryAddress: "123 Main St, Apt 4B",
-  },
-  {
-    id: "#ORD-2457",
-    date: "2024-12-10",
-    time: "7:15 PM",
-    status: "cancelled",
-    items: [
-      { name: "Chicken Burger", quantity: 1, price: 9.99 },
-      { name: "French Fries", quantity: 1, price: 3.99 }
-    ],
-    total: 13.98,
-    restaurant: "Burger Hub",
-    deliveryAddress: "123 Main St, Apt 4B",
-  },
-];
+interface ApiResponse {
+  statusCode: number;
+  data: {
+    allOrderList: MyOrder[];
+    inProgress: { count: number; orders: MyOrder[] };
+    completed: { count: number; orders: MyOrder[] };
+  };
+  message: string;
+}
 
 export default function MyOrders() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("all");
 
-  const filterOrders = () => {
-    return activeTab === "all"
-      ? orderData
-      : orderData.filter((o) => o.status === activeTab);
+  const STATUS_MAP: Record<TabType, string | undefined> = {
+    all: undefined,
+    completed: "completed",
+    cancelled: "cancelled",
   };
 
-  const filteredOrders = filterOrders();
+  // Cast the response so TS knows the shape
+  const { data, isLoading, error } =
+    useGetMyOrdersQuery(STATUS_MAP[activeTab]);
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+
+  const formatTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  const orders: MyOrder[] =
+    data?.data?.allOrderList ?? [];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <BackHeader title="My Orders" iconColor="black" backTo='/Profile' />
+    <View style={styles.container}>
+      <BackHeader title="My Orders" iconColor="black" backTo="/Profile" />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Tabs */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tabContainer}
-          contentContainerStyle={styles.tabContent}
-        >
-          {(["all", "delivered", "processing", "cancelled"] as TabType[]).map((t, index, arr) => (
+      {/* Tabs */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabScrollView}
+        contentContainerStyle={styles.tabContent}
+      >
+        {TABS.map((tab, index) => {
+          const isActive = activeTab === tab.key;
+          return (
             <TouchableOpacity
-              key={t}
-              onPress={() => setActiveTab(t)}
+              key={tab.key}
+              onPress={() => setActiveTab(tab.key)}
               style={[
                 styles.tab,
-                activeTab === t && styles.activeTab,
-
-                // ⭐ Add equal left & right spacing
-                index === 0 && { marginLeft: 20 },              // first tab spacing
-                index === arr.length - 1 && { marginRight: 20 } // last tab spacing
+                isActive && styles.activeTab,
+                index === 0 && { marginLeft: 20 },
+                index === TABS.length - 1 && { marginRight: 20 },
               ]}
+              activeOpacity={0.75}
             >
-              <Text style={[styles.tabText, activeTab === t && styles.activeTabText]}>
-                {t.charAt(0).toUpperCase() + t.slice(1)}
+              <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+                {tab.label}
               </Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-
-        {/* Order Cards */}
-        <View style={styles.ordersList}>
-          {filteredOrders.map((order) => (
-            <TouchableOpacity
-              key={order.id}
-              style={styles.orderCard}
-              onPress={() =>
-                router.push({
-                  pathname: "/MyOrders/OrderDetails",
-                  params: { orderId: order.id }
-                })
-              }
-            >
-              <Text style={styles.orderId}>{order.id}</Text>
-              <Text style={styles.date}>{order.date} at {order.time}</Text>
-              <Text style={styles.restaurant}>{order.restaurant}</Text>
-              <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.total}>₹{order.total.toFixed(2)}</Text>
-                <Text style={styles.total}>View Details</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+          );
+        })}
       </ScrollView>
-    </SafeAreaView>
+
+      {/* Total Orders Count */}
+      <Text style={styles.totalCount}>
+        {orders.length} {orders.length === 1 ? "order" : "orders"}
+      </Text>
+
+      {/* Order List — flex:1 so it fills remaining space with the bg color */}
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+      >
+        {isLoading ? (
+          <View style={styles.centerState}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.stateText}>Loading your orders…</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.centerState}>
+            <Text style={styles.stateIcon}>⚠️</Text>
+            <Text style={styles.stateTitle}>Something went wrong</Text>
+            <Text style={styles.stateText}>Could not load orders. Please try again.</Text>
+          </View>
+        ) : orders.length === 0 ? (
+          <View style={styles.centerState}>
+            <Text style={styles.stateIcon}>🛍️</Text>
+            <Text style={styles.stateTitle}>No orders here</Text>
+            <Text style={styles.stateText}>
+              {activeTab === "cancelled"
+                ? "No cancelled orders"
+                : "No completed orders yet"}
+            </Text>
+          </View>
+        ) : (
+          orders.map((order) => {
+            const cfg = STATUS_CONFIG[order.status] ?? {
+              color: "#6B7280",
+              bg: "#F9FAFB",
+              label: order.status,
+            };
+            const itemPreview = order.items
+              ?.slice(0, 2)
+              .map((i) => `${i.name} x${i.quantity}`)
+              .join("  •  ");
+            const extraItems = (order.items?.length ?? 0) - 2;
+
+            return (
+              <TouchableOpacity
+                key={order.orderId}
+                style={styles.card}
+                onPress={() =>
+                  router.push({
+                    pathname: "/MyOrders/OrderDetails",
+                    params: { orderId: order.orderId },
+                  })
+                }
+                activeOpacity={0.9}
+              >
+                {/* Left accent bar */}
+                <View style={[styles.accentBar, { backgroundColor: cfg.color }]} />
+
+                <View style={styles.cardInner}>
+                  {/* Header */}
+                  <View style={styles.cardHeader}>
+                    <View style={styles.cardHeaderLeft}>
+                      <Text style={styles.orderNumber}>#{order.orderNumber}</Text>
+                      <Text style={styles.restaurantName}>{order.restaurant?.name}</Text>
+                    </View>
+                    <View style={[styles.statusPill, { backgroundColor: cfg.bg }]}>
+                      <Text style={[styles.statusPillText, { color: cfg.color }]}>
+                        {cfg.label}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Items */}
+                  <Text style={styles.itemsText} numberOfLines={1}>
+                    {itemPreview}
+                    {extraItems > 0 ? `  +${extraItems} more` : ""}
+                  </Text>
+
+                  {/* Status Message */}
+                  {!!order.statusMessage && (
+                    <Text style={styles.statusMessage}>{order.statusMessage}</Text>
+                  )}
+
+                  <View style={styles.divider} />
+
+                  {/* Footer */}
+                  <View style={styles.cardFooter}>
+                    <View>
+                      <Text style={styles.totalAmount}>Rs.{order.totalAmount}</Text>
+                      <Text style={styles.dateText}>
+                        {formatDate(order.orderDate)} · {formatTime(order.orderDate)}
+                      </Text>
+                    </View>
+                    <View style={styles.detailsBtn}>
+                      <Text style={styles.detailsBtnText}>Details →</Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.accentSoft },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.accentSoft, // fills the ENTIRE screen including below the list
+  },
 
-  tabContainer: { marginBottom: 20 },
-
+  // Tabs
+  tabScrollView: {
+    flexGrow: 0,
+    marginTop: 14,
+  },
   tabContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,  // spacing between tabs
+    gap: 8,
+    paddingVertical: 2,
   },
-
   tab: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 24,
     backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  activeTab: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: Colors.muted,
+  },
+  activeTabText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
   },
 
-  activeTab: { backgroundColor: Colors.primary },
+  // Count
+  totalCount: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 6,
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.muted,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
 
-  tabText: { fontSize: 14, color: Colors.muted },
+  // ScrollView must have flex:1 so its background (inherited from container) fills all space
+  scrollView: {
+    flex: 1,
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 4,
+    paddingBottom: 32,
+    gap: 10,
+    flexGrow: 1, // ensures the content area stretches to fill even when list is short
+  },
 
-  activeTabText: { color: Colors.card },
+  // Card
+  card: {
+    backgroundColor: Colors.background,
+    borderRadius: 14,
+    flexDirection: "row",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  accentBar: {
+    width: 4,
+  },
+  cardInner: {
+    flex: 1,
+    padding: 14,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  cardHeaderLeft: {
+    flex: 1,
+    marginRight: 10,
+  },
+  orderNumber: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#111827",
+    letterSpacing: 0.3,
+  },
+  restaurantName: {
+    fontSize: 12,
+    color: Colors.muted,
+    marginTop: 2,
+    fontWeight: "500",
+  },
+  statusPill: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+  },
+  statusPillText: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+  itemsText: {
+    fontSize: 13,
+    color: "#374151",
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  statusMessage: {
+    fontSize: 12,
+    color: Colors.muted,
+    marginTop: 2,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#F3F4F6",
+    marginVertical: 10,
+  },
+  cardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  totalAmount: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: "#111827",
+    letterSpacing: -0.3,
+  },
+  dateText: {
+    fontSize: 11,
+    color: Colors.muted,
+    marginTop: 2,
+  },
+  detailsBtn: {
+    backgroundColor: Colors.primary + "18",
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 9,
+  },
+  detailsBtnText: {
+    color: Colors.primary,
+    fontWeight: "700",
+    fontSize: 12,
+  },
 
-  ordersList: { paddingHorizontal: 20, gap: 16 },
-
-  orderCard: { padding: 20, borderRadius: 10, backgroundColor: Colors.background },
-
-  orderId: { fontSize: 18, fontWeight: "700" },
-
-  date: { color: Colors.muted },
-
-  restaurant: { fontWeight: "600", marginTop: 6 },
-
-  total: { marginTop: 8, fontSize: 16, fontWeight: "700", color: Colors.primary }
+  // States
+  centerState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 60,
+  },
+  stateIcon: {
+    fontSize: 48,
+    marginBottom: 14,
+  },
+  stateTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#1F2937",
+    marginBottom: 6,
+  },
+  stateText: {
+    fontSize: 13,
+    color: Colors.muted,
+    textAlign: "center",
+    lineHeight: 20,
+    marginTop: 8,
+  },
 });

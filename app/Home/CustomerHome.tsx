@@ -3,7 +3,6 @@ import { View, StyleSheet, Text, ActivityIndicator, Modal } from "react-native";
 import { useState, useMemo } from "react";
 import { ScrollView } from "react-native-gesture-handler";
 import CompactFoodHeader from "@/components/HomeHeader/HomeHeader";
-import FoodHeading from "@/components/FoodHeading";
 import { useGetAllRestaurantsQuery } from "@/redux/services/resturantApi";
 import RestaurantFilters, { FilterType } from "@/components/RestaurantFilters/RestaurantFilters";
 import VegToggleModal from "@/components/VegToggleModal/VegToggleModal";
@@ -11,7 +10,6 @@ import RestaurantCard from "@/components/RestaurantCard";
 import { Colors, Spacing } from "@/app/theme";
 import { useOrderSocket } from "../socket/hooks/useOrderSocket";
 import OrderLiveCard from "@/components/order/OrderLiveCard";
-import { Order } from "../types";
 import { OrderPlace } from "../types/order";
 
 export default function CustomerHome() {

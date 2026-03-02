@@ -1,14 +1,14 @@
 import { useEffect } from "react";
-import { getSocket } from "../services/socket";
+import { initSocket } from "../services/socket";
 
 export const useOrderSocket = (onOrderPlaced: (data: any) => void) => {
   useEffect(() => {
-    const socket = getSocket();
+    const socket = initSocket(); // always returns Socket
 
     socket.on("orderPlaced", onOrderPlaced);
 
     return () => {
       socket.off("orderPlaced", onOrderPlaced);
     };
-  }, []);
+  }, [onOrderPlaced]);
 };

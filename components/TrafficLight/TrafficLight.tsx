@@ -1,200 +1,145 @@
 // TrafficLight.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
 export const TRAFFIC_STATUS = {
-    OPEN: 'open',      // Green - Available
-    BUSY: 'busy',      // Yellow - Partially Busy
-    CLOSED: 'closed',  // Red - Busy or Closed
+    OPEN: 'open',
+    BUSY: 'busy',
+    CLOSED: 'closed',
 } as const;
 
 interface TrafficLightProps {
     status: 'open' | 'busy' | 'closed';
-    deliveryTime?: number; // Estimated delivery time in minutes
 }
 
-export const TrafficLight: React.FC<TrafficLightProps> = ({
-    status,
-    deliveryTime = 30,
-}) => {
+export const TrafficLight: React.FC<TrafficLightProps> = ({ status }) => {
     const [blink, setBlink] = useState(true);
 
-    // Blinking effect for all active lights
     useEffect(() => {
         const interval = setInterval(() => {
             setBlink(prev => !prev);
-        }, 200);
+        }, 600); // slower blink — less distracting
         return () => clearInterval(interval);
     }, []);
 
-    // Get colors and info based on status
-    const getStatusInfo = () => {
-        switch (status) {
-            case TRAFFIC_STATUS.OPEN:
-                return {
-                    color: '#10B981',
-                    bgColor: '#D1FAE5',
-                    text: 'Fast Delivery',
-                    time: `${deliveryTime} min`,
-                    icon: '⚡',
-                };
-            case TRAFFIC_STATUS.BUSY:
-                return {
-                    color: '#F59E0B',
-                    bgColor: '#FEF3C7',
-                    text: 'Busy',
-                    time: `${deliveryTime + 10}-${deliveryTime + 15} min`,
-                    icon: '⏱️',
-                };
-            case TRAFFIC_STATUS.CLOSED:
-                return {
-                    color: '#EF4444',
-                    bgColor: '#FEE2E2',
-                    text: 'Closed',
-                    time: 'Not available',
-                    icon: '🔴',
-                };
-            default:
-                return {
-                    color: '#6B7280',
-                    bgColor: '#F3F4F6',
-                    text: 'Unknown',
-                    time: '--',
-                    icon: '❓',
-                };
-        }
+    const COLORS = {
+        red: '#EF4444',
+        yellow: '#F59E0B',
+        green: '#10B981',
+        inactive: '#E5E7EB',
     };
 
-    const info = getStatusInfo();
-    const inactiveColor = '#E5E7EB';
-
-    // Get light color for each position
     const getLightColor = (lightType: 'red' | 'yellow' | 'green') => {
         const isActive =
             (status === TRAFFIC_STATUS.CLOSED && lightType === 'red') ||
             (status === TRAFFIC_STATUS.BUSY && lightType === 'yellow') ||
             (status === TRAFFIC_STATUS.OPEN && lightType === 'green');
 
-        if (isActive) {
-            // Blink all active lights
-            return blink ? info.color : inactiveColor;
-        }
+        if (!isActive) return COLORS.inactive;
+        return blink ? COLORS[lightType] : COLORS.inactive;
+    };
 
-        return inactiveColor;
+    const getGlowColor = () => {
+        switch (status) {
+            case TRAFFIC_STATUS.OPEN: return 'rgba(16, 185, 129, 0.35)';
+            case TRAFFIC_STATUS.BUSY: return 'rgba(245, 158, 11, 0.35)';
+            case TRAFFIC_STATUS.CLOSED: return 'rgba(239, 68, 68, 0.35)';
+            default: return 'transparent';
+        }
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: info.bgColor }]}>
-            {/* Left: Traffic Lights */}
-            <View style={styles.lightsSection}>
-                <View style={styles.lightRow}>
-                    <View style={[styles.light, { backgroundColor: getLightColor('red') }]} />
-                    <View style={[styles.light, { backgroundColor: getLightColor('yellow') }]} />
-                    <View style={[styles.light, { backgroundColor: getLightColor('green') }]} />
-                </View>
-            </View>
+        <View style={styles.housing}>
+            {/* Red */}
+            <View style={[
+                styles.light,
+                { backgroundColor: getLightColor('red') },
+                status === TRAFFIC_STATUS.CLOSED && blink && {
+                    shadowColor: COLORS.red,
+                    shadowOpacity: 0.8,
+                    shadowRadius: 6,
+                    elevation: 6,
+                },
+            ]} />
 
-            {/* Middle: Status Info */}
-            <View style={styles.infoSection}>
-                <View style={styles.statusRow}>
-                    <Text style={styles.icon}>{info.icon}</Text>
-                    <Text style={[styles.statusText, { color: info.color }]}>
-                        {info.text}
-                    </Text>
-                </View>
-                <Text style={styles.timeText}>{info.time}</Text>
-            </View>
+            {/* Yellow */}
+            <View style={[
+                styles.light,
+                { backgroundColor: getLightColor('yellow') },
+                status === TRAFFIC_STATUS.BUSY && blink && {
+                    shadowColor: COLORS.yellow,
+                    shadowOpacity: 0.8,
+                    shadowRadius: 6,
+                    elevation: 6,
+                },
+            ]} />
+
+            {/* Green */}
+            <View style={[
+                styles.light,
+                { backgroundColor: getLightColor('green') },
+                status === TRAFFIC_STATUS.OPEN && blink && {
+                    shadowColor: COLORS.green,
+                    shadowOpacity: 0.8,
+                    shadowRadius: 6,
+                    elevation: 6,
+                },
+            ]} />
         </View>
     );
 };
 
-// Helper function to calculate traffic status
+// Helper functions (unchanged)
 export const calculateTrafficStatus = (
     currentOrders: number,
     maxCapacity: number = 10,
     isAcceptingOrders: boolean = true
 ): 'open' | 'busy' | 'closed' => {
     if (!isAcceptingOrders) return TRAFFIC_STATUS.CLOSED;
-
     const utilization = currentOrders / maxCapacity;
-
     if (utilization >= 0.8) return TRAFFIC_STATUS.CLOSED;
     if (utilization >= 0.5) return TRAFFIC_STATUS.BUSY;
     return TRAFFIC_STATUS.OPEN;
 };
 
-// Helper function to estimate delivery time based on traffic
 export const estimateDeliveryTime = (
     status: 'open' | 'busy' | 'closed',
     baseTime: number = 30
 ): number => {
     switch (status) {
-        case TRAFFIC_STATUS.OPEN:
-            return baseTime;
-        case TRAFFIC_STATUS.BUSY:
-            return baseTime + 15;
-        case TRAFFIC_STATUS.CLOSED:
-            return 0;
-        default:
-            return baseTime;
+        case TRAFFIC_STATUS.OPEN: return baseTime;
+        case TRAFFIC_STATUS.BUSY: return baseTime + 15;
+        case TRAFFIC_STATUS.CLOSED: return 0;
+        default: return baseTime;
     }
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
+    housing: {
+        flexDirection: 'column',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        borderRadius: 12,
-        marginBottom: 12,
-        gap: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(0, 0, 0, 0.05)',
-    },
-    lightsSection: {
         justifyContent: 'center',
-    },
-    lightRow: {
-        flexDirection: 'row',
-        gap: 6,
-        backgroundColor: '#F9FAFB',
-        padding: 6,
-        borderRadius: 20,
+        gap: 5,
+        backgroundColor: '#1F2937',
+        paddingVertical: 8,
+        paddingHorizontal: 7,
+        borderRadius: 14,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: '#374151',
+        // subtle shadow for the housing
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
     },
     light: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 2,
-    },
-    infoSection: {
-        flex: 1,
-        gap: 2,
-    },
-    statusRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    icon: {
-        fontSize: 16,
-    },
-    statusText: {
-        fontSize: 14,
-        fontWeight: '700',
-        letterSpacing: -0.2,
-    },
-    timeText: {
-        fontSize: 12,
-        color: '#6B7280',
-        fontWeight: '600',
-        marginLeft: 22,
+        width: 14,
+        height: 14,
+        borderRadius: 7,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0,
+        shadowRadius: 0,
+        elevation: 0,
     },
 });
