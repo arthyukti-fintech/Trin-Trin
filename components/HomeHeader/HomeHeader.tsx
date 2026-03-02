@@ -42,7 +42,7 @@ export default function CompactFoodHeader({ profileData }: any) {
     //     } = useGetMyProfileQuery();
 
     const userName = profileData?.data?.fullName?.split(" ")[0] || "User";
-  
+
     const userEmail = "arman@example.com";
     const userPhone = "+91 98765 43210";
     const rewardPoints = 1250;
@@ -174,7 +174,7 @@ export default function CompactFoodHeader({ profileData }: any) {
                                     pathname: "/TakeOrders",
                                     params: {
                                         restaurantId: restaurantId,
-                                        
+
                                     },
                                 })
                             }

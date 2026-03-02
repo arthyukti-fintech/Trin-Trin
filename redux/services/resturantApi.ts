@@ -14,6 +14,12 @@ export interface Restaurant {
   priceForTwo: number;
   isVegOnly: boolean;
   isActive: boolean;
+  isCloudKitchen?: boolean;
+  freeDelivery?: boolean;
+  deliveryFee?: number;
+  rating?: number;
+  totalRatings?: number;
+  createdAt?: string;
   address: {
     street: string;
     city: string;
@@ -27,12 +33,23 @@ export interface Restaurant {
   };
 }
 
-/* 🔥 THIS WAS THE BUG */
 export interface RestaurantResponse {
   success: boolean;
   data: {
     restaurants: Restaurant[];
   };
+}
+
+export interface RestaurantQueryParams {
+  filterBy?:
+  | "all"
+  | "freeDelivery"
+  | "fastDelivery"
+  | "topRated"
+  | "cloudKitchen"
+  | "newlyOpened";
+  isVegOnly?: boolean;
+  search?: string;
 }
 
 /* ===========================
@@ -44,17 +61,42 @@ export const resturantApi = createApi({
   baseQuery,
   tagTypes: ["Restaurant"],
   endpoints: (builder) => ({
-    // 🍽️ Get all restaurants
-    getAllRestaurants: builder.query<RestaurantResponse, void>({
-      query: () => ({
-        url: "/restaurants/getall",
-        method: "GET",
-      }),
+    getAllRestaurants: builder.query<
+      RestaurantResponse,
+      RestaurantQueryParams | undefined
+    >({
+      query: (params) => {
+        // ✅ Strip out default/empty values so they don't pollute the URL
+        const cleanParams: Record<string, string | boolean> = {};
+
+        if (params?.filterBy && params.filterBy !== "all") {
+          cleanParams.filterBy = params.filterBy;
+        }
+
+        if (params?.isVegOnly === true) {
+          cleanParams.isVegOnly = true;
+        }
+
+        if (params?.search && params.search.trim() !== "") {
+          cleanParams.search = params.search.trim();
+        }
+
+        // 🔍 Debug — remove once confirmed working
+        console.log("📡 API URL: /restaurants/getall");
+        console.log("📦 Params being sent:", cleanParams);
+        console.log("🔗 Full query string:", new URLSearchParams(
+          Object.entries(cleanParams).map(([k, v]) => [k, String(v)])
+        ).toString());
+
+        return {
+          url: "/restaurants/getall",
+          method: "GET",
+          params: Object.keys(cleanParams).length > 0 ? cleanParams : undefined,
+        };
+      },
       providesTags: ["Restaurant"],
     }),
   }),
 });
 
-export const {
-  useGetAllRestaurantsQuery,
-} = resturantApi;
+export const { useGetAllRestaurantsQuery } = resturantApi;

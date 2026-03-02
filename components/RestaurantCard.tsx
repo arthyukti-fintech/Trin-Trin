@@ -291,17 +291,6 @@ export default function RestaurantCard({
                             <Text style={styles.callText}>Call</Text>
                         </Pressable>
 
-                        {/* <Pressable
-        style={({ pressed }) => [
-            styles.actionBtn,
-            styles.whatsappBtn,
-            { opacity: pressed ? 0.85 : 1 },
-        ]}
-    >
-        <Ionicons name="logo-whatsapp" size={16} color="#fff" />
-        <Text style={styles.whatsappText}>WhatsApp</Text>
-    </Pressable> */}
-
                         <Pressable
                             style={({ pressed }) => [
                                 styles.actionBtn,
@@ -529,7 +518,7 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(255, 255, 255, 0.2)',
     },
     callBtn: {
-        backgroundColor: Colors.primary,
+        backgroundColor: Colors.accent,
     },
     callIconContainer: {
         width: 32,

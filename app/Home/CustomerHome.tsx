@@ -11,17 +11,28 @@ import { Colors, Spacing } from "@/app/theme";
 import { useOrderSocket } from "../socket/hooks/useOrderSocket";
 import OrderLiveCard from "@/components/order/OrderLiveCard";
 import { OrderPlace } from "../types/order";
+import FoodHeading from "@/components/FoodHeading";
 
 export default function CustomerHome() {
-  const { data, isLoading, error, refetch } = useGetAllRestaurantsQuery();
+
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [isVegOnly, setIsVegOnly] = useState(false);
   const [showVegModal, setShowVegModal] = useState(false);
   const [pendingVegState, setPendingVegState] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const [order, setOrder] = useState<OrderPlace | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+
+  const { data, isLoading, error, refetch } = useGetAllRestaurantsQuery({
+    filterBy: selectedFilter,
+    isVegOnly,
+    search: searchText,
+  });
   const restaurants = data?.data?.restaurants || [];
+  console.log("🔥 RAW API RESPONSE:", data?.data?.restaurants);
+
+  // console.log(JSON.stringify(data))
 
   useOrderSocket((incomingOrder) => {
     console.log("Order received:", incomingOrder);
@@ -44,45 +55,6 @@ export default function CustomerHome() {
     setShowVegModal(false);
   };
 
-  // 🔍 Filter Logic
-  const filteredRestaurants = useMemo(() => {
-    let filtered = restaurants;
-
-    // Apply Veg Only filter first
-    if (isVegOnly) {
-      filtered = filtered.filter((restaurant: any) => restaurant.isVegOnly === true);
-    }
-
-    // Apply regular filters
-    if (selectedFilter !== 'all') {
-      filtered = filtered.filter((restaurant: any) => {
-        switch (selectedFilter) {
-          case 'freeDelivery':
-            return restaurant.deliveryFee === 0 || restaurant.freeDelivery === true;
-
-          case 'cloudKitchen':
-            return restaurant.isCloudKitchen === true || restaurant.type === 'cloud';
-
-          case 'fastDelivery':
-            return parseInt(restaurant.averageDeliveryTime) <= 30;
-
-          case 'topRated':
-            return restaurant.rating >= 4.0;
-
-          case 'newlyOpened':
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            return new Date(restaurant.createdAt) > thirtyDaysAgo;
-
-          default:
-            return true;
-        }
-      });
-    }
-
-    return filtered;
-  }, [restaurants, selectedFilter, isVegOnly]);
-
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -104,6 +76,10 @@ export default function CustomerHome() {
 
   const hasActiveFilters = selectedFilter !== 'all' || isVegOnly;
 
+  const handleFilterChange = (filter: FilterType) => {
+    setSelectedFilter(filter);
+  }
+
   return (
     <View style={styles.content}>
       <CompactFoodHeader />
@@ -117,7 +93,6 @@ export default function CustomerHome() {
 
       </Modal>
 
-
       {/* <FoodHeading
         title="What are you craving ?"
         highlightWord="craving"
@@ -128,15 +103,15 @@ export default function CustomerHome() {
       <RestaurantFilters
         selectedFilter={selectedFilter}
         isVegOnly={isVegOnly}
-        onFilterChange={setSelectedFilter}
+        onFilterChange={handleFilterChange}
         onVegToggle={handleVegToggleRequest}
       />
 
       {/* 📊 Results Counter */}
       <View style={styles.resultsHeader}>
-        <Text style={styles.resultsText}>
+        {/* <Text style={styles.resultsText}>
           {filteredRestaurants.length} {filteredRestaurants.length === 1 ? 'restaurant' : 'restaurants'} found
-        </Text>
+        </Text> */}
         {hasActiveFilters && (
           <Text
             style={styles.clearFilter}
@@ -154,7 +129,7 @@ export default function CustomerHome() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {filteredRestaurants.length === 0 ? (
+        {restaurants.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>No restaurants found</Text>
             <Text style={styles.emptySubtitle}>
@@ -171,7 +146,7 @@ export default function CustomerHome() {
             </Text>
           </View>
         ) : (
-          filteredRestaurants.map((restaurant: any) => (
+          restaurants.map((restaurant: any) => (
             <RestaurantCard
               key={restaurant._id}
               id={restaurant._id}
