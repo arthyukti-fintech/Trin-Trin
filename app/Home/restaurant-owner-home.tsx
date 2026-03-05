@@ -2,7 +2,6 @@
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useState } from "react";
 import { router } from "expo-router";
-
 import CompactFoodHeader from "@/components/HomeHeader/HomeHeader";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors, Spacing } from "@/app/theme";
@@ -10,25 +9,18 @@ import { useGetOrdersQuery } from "@/redux/services/getordersApi";
 import { useLocalSearchParams } from "expo-router";
 import { useGetMyProfileQuery } from "@/redux/services/profileApi";
 
-
-
-
 type OrderStatus = 'confirmed' | 'pending' | 'preparing' | 'ready' | 'delivered';
-
 
 export default function RestaurantOwnerHome({ profileData }: any) {
   const [selectedTab, setSelectedTab] = useState<'all' | OrderStatus>('all');
   // const [orders] = useState(MOCK_ORDERS);
   const { restaurantId, restaurantName } = useLocalSearchParams();
- const { data, isLoading, error } = useGetOrdersQuery(restaurantId as string);
+  const { data, isLoading, error } = useGetOrdersQuery(restaurantId as string);
 
-  const {data:profiledata, isLoading:profileLoading, error:profileError} = useGetMyProfileQuery();
+  const { data: profiledata, isLoading: profileLoading, error: profileError } = useGetMyProfileQuery();
+  console.log(data,"data--------")
 
-
-
-const orders = data?.data?.orderList || [];
-
-
+  const orders = data?.data?.orderList || [];
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -140,15 +132,13 @@ const orders = data?.data?.orderList || [];
                         onPress={() =>
                           router.push({
                             pathname: "/OrderDetails",
-                           params: { order: JSON.stringify(order) }
+                            params: { order: JSON.stringify(order) }
                           })
 
                         }
                       >
                         <Text style={styles.viewButtonText}>View Details</Text>
                       </TouchableOpacity>
-
-
                     </View>
                   </View>
                 </View>

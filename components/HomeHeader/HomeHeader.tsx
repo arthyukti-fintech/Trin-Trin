@@ -16,6 +16,8 @@ import { Colors } from "@/app/theme";
 import { router } from "expo-router";
 import { useGetMyProfileQuery } from "@/redux/services/profileApi";
 import { useLocalSearchParams } from "expo-router";
+import { useGetAllRestaurantsQuery } from "@/redux/services/resturantApi";
+import { FilterType } from "../RestaurantFilters/RestaurantFilters";
 
 export default function CompactFoodHeader({ profileData }: any) {
     const navigation = useNavigation();
@@ -24,6 +26,7 @@ export default function CompactFoodHeader({ profileData }: any) {
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [showOrderBanner, setShowOrderBanner] = useState(true);
+    const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
     const [selectedAddress, setSelectedAddress] = useState({
         id: 1,
         label: "Home",
@@ -32,14 +35,10 @@ export default function CompactFoodHeader({ profileData }: any) {
     });
     const { restaurantId } = useLocalSearchParams();
 
-
-    // console.log("jhserf", profileData?.fullName)
-
-    //    const {
-    //       data: profileData,
-    //       isLoading: isProfileLoading,
-    //       error: profileError,
-    //     } = useGetMyProfileQuery();
+    const { data, isLoading, error, refetch } = useGetAllRestaurantsQuery({
+        filterBy: selectedFilter
+    });
+    const restaurants = data?.data?.restaurants || [];
 
     const userName = profileData?.data?.fullName?.split(" ")[0] || "User";
 
@@ -67,13 +66,13 @@ export default function CompactFoodHeader({ profileData }: any) {
         { id: 3, label: "Mom's", address: "789 Koramangala", icon: "heart" },
     ];
 
-    const restaurants = [
-        { id: 1, name: "Pizza Palace", cuisine: "Italian", rating: 4.5, time: "30 min", emoji: "🍕" },
-        { id: 2, name: "Burger Bros", cuisine: "American", rating: 4.3, time: "25 min", emoji: "🍔" },
-        { id: 3, name: "Sushi Master", cuisine: "Japanese", rating: 4.7, time: "40 min", emoji: "🍱" },
-        { id: 4, name: "Taco Fiesta", cuisine: "Mexican", rating: 4.4, time: "35 min", emoji: "🌮" },
-        { id: 5, name: "Curry House", cuisine: "Indian", rating: 4.6, time: "30 min", emoji: "🍛" },
-    ];
+    // const restaurants = [
+    //     { id: 1, name: "Pizza Palace", cuisine: "Italian", rating: 4.5, time: "30 min", emoji: "🍕" },
+    //     { id: 2, name: "Burger Bros", cuisine: "American", rating: 4.3, time: "25 min", emoji: "🍔" },
+    //     { id: 3, name: "Sushi Master", cuisine: "Japanese", rating: 4.7, time: "40 min", emoji: "🍱" },
+    //     { id: 4, name: "Taco Fiesta", cuisine: "Mexican", rating: 4.4, time: "35 min", emoji: "🌮" },
+    //     { id: 5, name: "Curry House", cuisine: "Indian", rating: 4.6, time: "30 min", emoji: "🍛" },
+    // ];
 
     const filteredRestaurants = restaurants.filter(r =>
         r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -88,6 +87,12 @@ export default function CompactFoodHeader({ profileData }: any) {
     const handleSearch = (text: any) => {
         setSearchQuery(text);
         setShowSearchResults(text.length > 0);
+    };
+
+    const getRatingColor = (rating: number) => {
+        if (rating >= 4.0) return "#10B981";
+        if (rating >= 3.0) return "#F59E0B";
+        return "#EF4444";
     };
 
     return (
@@ -179,7 +184,6 @@ export default function CompactFoodHeader({ profileData }: any) {
                                 })
                             }
                         >
-
                             <Text style={styles.ownerBtnText}>Take Orders</Text>
                         </Pressable>
                     </View>
@@ -209,9 +213,6 @@ export default function CompactFoodHeader({ profileData }: any) {
                 )}
 
             </View>
-
-            {/* Profile Modal */}
-
 
             {/* Location Dropdown Modal */}
             <Modal
@@ -278,21 +279,20 @@ export default function CompactFoodHeader({ profileData }: any) {
                         <ScrollView>
                             {filteredRestaurants.map((restaurant) => (
                                 <Pressable
-                                    key={restaurant.id}
+                                    key={restaurant._id}
                                     onPress={() => {
                                         setShowSearchResults(false);
                                         setSearchQuery("");
                                     }}
                                     style={styles.restaurantItem}
                                 >
-                                    <Text style={styles.restaurantEmoji}>{restaurant.emoji}</Text>
+                                    {/* <Text style={styles.restaurantEmoji}>{restaurant.emoji}</Text> */}
                                     <View style={styles.restaurantInfo}>
                                         <Text style={styles.restaurantName}>{restaurant.name}</Text>
                                         <View style={styles.restaurantMeta}>
                                             <Ionicons name="star" size={12} color="#FFD700" />
-                                            <Text style={styles.metaText}>{restaurant.rating}</Text>
                                             <Text style={styles.metaSeparator}>•</Text>
-                                            <Text style={styles.metaText}>{restaurant.time}</Text>
+                                            {/* <Text style={styles.metaText}>{restaurant.time}</Text> */}
                                         </View>
                                     </View>
                                     <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
@@ -309,8 +309,6 @@ export default function CompactFoodHeader({ profileData }: any) {
 const styles = StyleSheet.create({
     safe: {
         backgroundColor: Colors.accentSoft,
-
-
     },
 
     orderBanner: {
@@ -320,8 +318,6 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingHorizontal: 16,
         paddingVertical: 10,
-
-
     },
 
     orderContent: {

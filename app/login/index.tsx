@@ -19,7 +19,6 @@ import Animated, {
     useSharedValue,
     withSpring
 } from "react-native-reanimated";
-
 import { Colors } from "../theme";
 import { styles } from "./loginStyle";
 import { useLoginMutation } from "@/redux/services/authApi";
@@ -102,12 +101,12 @@ export default function Login() {
                         entering={FadeInDown.delay(200).duration(1000)}
                         style={styles.headerContent}
                     >
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                             onPress={() => router.back()}
                             style={styles.backButton}
                         >
                             <Ionicons name="arrow-back" size={24} color="#fff" />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         {/* <Text style={styles.appTitle}>Trin Trin</Text> */}
                         <Text style={styles.tagline}>Cravings? Solved.</Text>
                     </Animated.View>
