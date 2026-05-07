@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
     safe: {
-        backgroundColor: "#FAFAFA",
+        backgroundColor: Colors.accentSoft,
     },
 
     orderBanner: {
@@ -50,6 +50,9 @@ export const styles = StyleSheet.create({
     header: {
         paddingHorizontal: 16,
         paddingVertical: 12,
+
+
+
     },
 
     topRow: {
@@ -146,7 +149,7 @@ export const styles = StyleSheet.create({
         height: 48,
         borderWidth: 1,
         borderColor: "#E5E7EB",
-        marginBottom: 12,
+        marginBottom: 0,
     },
 
     searchInput: {
@@ -423,5 +426,32 @@ export const styles = StyleSheet.create({
         fontSize: 12,
         color: Colors.muted,
         marginHorizontal: 6,
+    },
+    ownerActions: {
+        flexDirection: "row",
+        gap: 12,
+        padding: 16,
+    },
+
+    ownerBtn: {
+        flex: 1,
+        backgroundColor: Colors.primary,
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: "center",
+    },
+
+    ownerBtnSecondary: {
+        flex: 1,
+        backgroundColor: Colors.secondary,
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: "center",
+    },
+
+    ownerBtnText: {
+        color: "#fff",
+        fontWeight: "600",
+        fontSize: 15,
     },
 });

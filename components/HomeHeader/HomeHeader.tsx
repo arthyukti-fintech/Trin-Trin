@@ -8,6 +8,7 @@ import {
     ScrollView,
     Modal,
     Image,
+    ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -16,8 +17,8 @@ import { Colors } from "@/app/theme";
 import { router } from "expo-router";
 import { useGetMyProfileQuery } from "@/redux/services/profileApi";
 import { useLocalSearchParams } from "expo-router";
+import { styles } from "./HomeHeaderStyle";
 import { useGetAllRestaurantsQuery } from "@/redux/services/resturantApi";
-import { FilterType } from "../RestaurantFilters/RestaurantFilters";
 
 export default function CompactFoodHeader({ profileData }: any) {
     const navigation = useNavigation();
@@ -26,7 +27,6 @@ export default function CompactFoodHeader({ profileData }: any) {
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [showOrderBanner, setShowOrderBanner] = useState(true);
-    const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
     const [selectedAddress, setSelectedAddress] = useState({
         id: 1,
         label: "Home",
@@ -34,11 +34,10 @@ export default function CompactFoodHeader({ profileData }: any) {
         icon: "home",
     });
     const { restaurantId } = useLocalSearchParams();
-
-    const { data, isLoading, error, refetch } = useGetAllRestaurantsQuery({
-        filterBy: selectedFilter
+    console.log(searchQuery, "------------searchQuery")
+    const { data: restaurantsData, isLoading } = useGetAllRestaurantsQuery({
+        search: searchQuery,
     });
-    const restaurants = data?.data?.restaurants || [];
 
     const userName = profileData?.data?.fullName?.split(" ")[0] || "User";
 
@@ -66,18 +65,8 @@ export default function CompactFoodHeader({ profileData }: any) {
         { id: 3, label: "Mom's", address: "789 Koramangala", icon: "heart" },
     ];
 
-    // const restaurants = [
-    //     { id: 1, name: "Pizza Palace", cuisine: "Italian", rating: 4.5, time: "30 min", emoji: "🍕" },
-    //     { id: 2, name: "Burger Bros", cuisine: "American", rating: 4.3, time: "25 min", emoji: "🍔" },
-    //     { id: 3, name: "Sushi Master", cuisine: "Japanese", rating: 4.7, time: "40 min", emoji: "🍱" },
-    //     { id: 4, name: "Taco Fiesta", cuisine: "Mexican", rating: 4.4, time: "35 min", emoji: "🌮" },
-    //     { id: 5, name: "Curry House", cuisine: "Indian", rating: 4.6, time: "30 min", emoji: "🍛" },
-    // ];
-
-    const filteredRestaurants = restaurants.filter(r =>
-        r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const restaurants = restaurantsData?.data?.restaurants || [];
+    console.log("SEARCH RESULTS:", JSON.stringify(restaurantsData));
 
     const handleAddressSelect = (address: any) => {
         setSelectedAddress(address);
@@ -87,12 +76,6 @@ export default function CompactFoodHeader({ profileData }: any) {
     const handleSearch = (text: any) => {
         setSearchQuery(text);
         setShowSearchResults(text.length > 0);
-    };
-
-    const getRatingColor = (rating: number) => {
-        if (rating >= 4.0) return "#10B981";
-        if (rating >= 3.0) return "#F59E0B";
-        return "#EF4444";
     };
 
     return (
@@ -214,6 +197,9 @@ export default function CompactFoodHeader({ profileData }: any) {
 
             </View>
 
+            {/* Profile Modal */}
+
+
             {/* Location Dropdown Modal */}
             <Modal
                 visible={showLocationDropdown}
@@ -270,497 +256,49 @@ export default function CompactFoodHeader({ profileData }: any) {
                 <Pressable style={styles.modalOverlay} onPress={() => setShowSearchResults(false)}>
                     <View style={styles.searchModal}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>{filteredRestaurants.length} found</Text>
+                            <Text style={styles.modalTitle}>
+                                {isLoading ? "Searching..." : `${restaurants.length} found`}
+                            </Text>
                             <Pressable onPress={() => setShowSearchResults(false)}>
                                 <Ionicons name="close" size={24} color={Colors.secondary} />
                             </Pressable>
                         </View>
 
-                        <ScrollView>
-                            {filteredRestaurants.map((restaurant) => (
-                                <Pressable
-                                    key={restaurant._id}
-                                    onPress={() => {
-                                        setShowSearchResults(false);
-                                        setSearchQuery("");
-                                    }}
-                                    style={styles.restaurantItem}
-                                >
-                                    {/* <Text style={styles.restaurantEmoji}>{restaurant.emoji}</Text> */}
-                                    <View style={styles.restaurantInfo}>
-                                        <Text style={styles.restaurantName}>{restaurant.name}</Text>
-                                        <View style={styles.restaurantMeta}>
-                                            <Ionicons name="star" size={12} color="#FFD700" />
-                                            <Text style={styles.metaSeparator}>•</Text>
-                                            {/* <Text style={styles.metaText}>{restaurant.time}</Text> */}
+                        {isLoading ? (
+                            <ActivityIndicator size="small" color={Colors.primary} style={{ padding: 20 }} />
+                        ) : restaurants.length === 0 ? (
+                            <Text style={{ padding: 20, textAlign: "center", color: Colors.muted }}>
+                                No restaurants found for "{searchQuery}"
+                            </Text>
+                        ) : (
+                            <ScrollView>
+                                {restaurants.map((restaurant) => (
+                                    <Pressable
+                                        key={restaurant._id}
+                                        onPress={() => {
+                                            setShowSearchResults(false);
+                                            setSearchQuery("");
+                                            // router.push(`/restaurant/${restaurant._id}`); // ← navigate if needed
+                                        }}
+                                        style={styles.restaurantItem}
+                                    >
+                                        <View style={styles.restaurantInfo}>
+                                            <Text style={styles.restaurantName}>{restaurant.name}</Text>
+                                            <View style={styles.restaurantMeta}>
+                                                <Ionicons name="star" size={12} color="#FFD700" />
+                                                <Text style={styles.metaText}>{restaurant.rating}</Text>
+                                                <Text style={styles.metaSeparator}>•</Text>
+                                                <Text style={styles.metaText}>{restaurant.cuisine}</Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                    <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
-                                </Pressable>
-                            ))}
-                        </ScrollView>
+                                        <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
+                                    </Pressable>
+                                ))}
+                            </ScrollView>
+                        )}
                     </View>
                 </Pressable>
             </Modal>
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    safe: {
-        backgroundColor: Colors.accentSoft,
-    },
-
-    orderBanner: {
-        backgroundColor: "#10B981",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-    },
-
-    orderContent: {
-        flexDirection: "row",
-        alignItems: "center",
-
-    },
-
-    pulseWrap: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: "rgba(255, 255, 255, 0.3)",
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 10,
-
-
-    },
-
-    pulseDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: "#fff",
-    },
-
-    orderText: {
-        color: "#fff",
-        fontSize: 13,
-        fontWeight: "600",
-    },
-
-    orderTime: {
-        fontWeight: "700",
-    },
-
-    header: {
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-
-
-
-    },
-
-    topRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 12,
-    },
-
-    profileSection: {
-        flexDirection: "row",
-        alignItems: "center",
-        flex: 1,
-    },
-
-    avatarWrap: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: Colors.primary,
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 10,
-        position: "relative",
-    },
-
-    avatarText: {
-        color: "#fff",
-        fontSize: 18,
-        fontWeight: "700",
-    },
-
-    rewardsBadge: {
-        position: "absolute",
-        bottom: -2,
-        right: -2,
-        width: 18,
-        height: 18,
-        borderRadius: 9,
-        backgroundColor: "#fff",
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 2,
-        borderColor: "#FAFAFA",
-    },
-
-    profileInfo: {
-        flex: 1,
-    },
-
-    greeting: {
-        fontSize: 15,
-        fontWeight: "700",
-        color: Colors.secondary,
-        marginBottom: 2,
-    },
-
-    pointsRow: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-
-    points: {
-        fontSize: 12,
-        fontWeight: "600",
-        color: Colors.muted,
-        marginLeft: 4,
-    },
-
-    locationPill: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-    },
-
-    locationText: {
-        fontSize: 13,
-        fontWeight: "600",
-        color: Colors.secondary,
-        marginHorizontal: 6,
-    },
-
-    searchBar: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        paddingHorizontal: 14,
-        height: 48,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        marginBottom: 0,
-    },
-
-    searchInput: {
-        flex: 1,
-        marginLeft: 10,
-        fontSize: 14,
-        color: Colors.secondary,
-        fontWeight: "500",
-    },
-
-    filters: {
-        gap: 8,
-    },
-
-    filterChip: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderRadius: 20,
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        marginRight: 8,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-    },
-
-    filterText: {
-        fontSize: 12,
-        fontWeight: "600",
-        color: Colors.secondary,
-        marginLeft: 6,
-    },
-
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        justifyContent: "flex-end",
-    },
-
-    profileModal: {
-        backgroundColor: "#fff",
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingTop: 24,
-        maxHeight: "85%",
-    },
-
-    profileHeader: {
-        alignItems: "center",
-        paddingHorizontal: 24,
-        paddingBottom: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
-    },
-
-    largeAvatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: Colors.primary,
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 12,
-    },
-
-    largeAvatarText: {
-        color: "#fff",
-        fontSize: 32,
-        fontWeight: "700",
-    },
-
-    profileName: {
-        fontSize: 20,
-        fontWeight: "700",
-        color: Colors.secondary,
-        marginBottom: 4,
-    },
-
-    profileEmail: {
-        fontSize: 14,
-        color: Colors.muted,
-        marginBottom: 16,
-    },
-
-    rewardsCard: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#FFF7ED",
-        borderRadius: 12,
-        padding: 16,
-        width: "100%",
-    },
-
-    rewardsInfo: {
-        marginLeft: 12,
-    },
-
-    rewardsLabel: {
-        fontSize: 12,
-        color: Colors.muted,
-        marginBottom: 4,
-    },
-
-    rewardsValue: {
-        fontSize: 24,
-        fontWeight: "700",
-        color: Colors.primary,
-    },
-
-    profileMenu: {
-        padding: 16,
-    },
-
-    menuItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 14,
-    },
-
-    menuIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 12,
-    },
-
-    menuLabel: {
-        flex: 1,
-        fontSize: 15,
-        fontWeight: "600",
-        color: Colors.secondary,
-    },
-
-    closeButton: {
-        margin: 16,
-        marginTop: 8,
-        backgroundColor: "#F3F4F6",
-        borderRadius: 12,
-        padding: 16,
-        alignItems: "center",
-    },
-
-    closeButtonText: {
-        fontSize: 15,
-        fontWeight: "600",
-        color: Colors.secondary,
-    },
-
-    locationModal: {
-        backgroundColor: "#fff",
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingTop: 20,
-        maxHeight: "60%",
-    },
-
-    searchModal: {
-        backgroundColor: "#fff",
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingTop: 20,
-        maxHeight: "70%",
-    },
-
-    modalHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 20,
-        paddingBottom: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
-    },
-
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: Colors.secondary,
-    },
-
-    addressItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 16,
-        paddingHorizontal: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
-    },
-
-    selectedAddress: {
-        backgroundColor: "#FFF7ED",
-    },
-
-    addressIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        backgroundColor: "#FFF7ED",
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 12,
-    },
-
-    addressInfo: {
-        flex: 1,
-    },
-
-    addressLabel: {
-        fontSize: 15,
-        fontWeight: "700",
-        color: Colors.secondary,
-        marginBottom: 4,
-    },
-
-    addressText: {
-        fontSize: 13,
-        color: Colors.muted,
-    },
-
-    addAddress: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 16,
-        paddingHorizontal: 20,
-        backgroundColor: "#FFF7ED",
-    },
-
-    addAddressText: {
-        fontSize: 15,
-        fontWeight: "700",
-        color: Colors.primary,
-        marginLeft: 10,
-    },
-
-    restaurantItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 16,
-        paddingHorizontal: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
-    },
-
-    restaurantEmoji: {
-        fontSize: 40,
-        marginRight: 12,
-    },
-
-    restaurantInfo: {
-        flex: 1,
-    },
-
-    restaurantName: {
-        fontSize: 15,
-        fontWeight: "700",
-        color: Colors.secondary,
-        marginBottom: 4,
-    },
-
-    restaurantMeta: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-
-    metaText: {
-        fontSize: 12,
-        color: Colors.muted,
-        marginLeft: 4,
-    },
-
-    metaSeparator: {
-        fontSize: 12,
-        color: Colors.muted,
-        marginHorizontal: 6,
-    },
-    ownerActions: {
-        flexDirection: "row",
-        gap: 12,
-        padding: 16,
-    },
-
-    ownerBtn: {
-        flex: 1,
-        backgroundColor: Colors.primary,
-        paddingVertical: 14,
-        borderRadius: 10,
-        alignItems: "center",
-    },
-
-    ownerBtnSecondary: {
-        flex: 1,
-        backgroundColor: Colors.secondary,
-        paddingVertical: 14,
-        borderRadius: 10,
-        alignItems: "center",
-    },
-
-    ownerBtnText: {
-        color: "#fff",
-        fontWeight: "600",
-        fontSize: 15,
-    },
-
-});

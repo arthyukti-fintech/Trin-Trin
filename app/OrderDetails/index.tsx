@@ -183,7 +183,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: Spacing.md,
-
   },
   title: {
     fontSize: 22,

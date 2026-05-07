@@ -30,7 +30,7 @@ export default function CustomerHome() {
     search: searchText,
   });
   const restaurants = data?.data?.restaurants || [];
-  // console.log("🔥 RAW API RESPONSE:", data?.data?.restaurants?.[0].ratings.average);
+  console.log("🔥 RAW API RESPONSE:", data?.data?.restaurants);
 
   // console.log(JSON.stringify(data))
 
@@ -103,8 +103,8 @@ export default function CustomerHome() {
       <RestaurantFilters
         selectedFilter={selectedFilter}
         isVegOnly={isVegOnly}
-        onFilterChange={handleFilterChange}
-        onVegToggle={handleVegToggleRequest}
+        onFilterChange={setSelectedFilter}
+        onVegToggle={setIsVegOnly}
       />
 
       {/* 📊 Results Counter */}
@@ -153,8 +153,8 @@ export default function CustomerHome() {
               name={restaurant.name}
               cuisine={restaurant.cuisine}
               address={`${restaurant.address.street}, ${restaurant.address.city}`}
-              rating={restaurant.ratings?.average || 0}
-              totalRatings={restaurant.ratings?.count || 0}
+              rating={restaurant.rating || 4.2}
+              totalRatings={restaurant.totalRatings || 120}
               deliveryTime={`${restaurant.averageDeliveryTime} min`}
               averageDeliveryTime={restaurant.averageDeliveryTime}
               distance="2.5 km"
@@ -165,6 +165,7 @@ export default function CustomerHome() {
                 restaurant.images?.interior,
                 restaurant.images?.menuCard,
               ].filter(Boolean)}
+
             />
           ))
         )}
